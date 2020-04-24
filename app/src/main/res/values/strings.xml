@@ -1,0 +1,19 @@
+<resources>
+
+    <string name="app_name">Acquirentine</string>
+    <string name="shared_preferences_key">shared_preferences_key</string>
+    <string name="shared_preferences_user_id">shared_preferences_user_id</string>
+
+    <string-array name="corporations_array">
+        <item>Select Corporation</item>
+        <item>Spark</item>
+        <item>Nestor</item>
+        <item>Rove</item>
+        <item>Fleet</item>
+        <item>Etch</item>
+        <item>Bolt</item>
+        <item>Echo</item>
+    </string-array>
+
+
+</resources>

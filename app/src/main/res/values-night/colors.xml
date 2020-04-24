@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#1AE18D</color>
+    <color name="colorPrimaryDark">#1AE18D</color>
+    <color name="colorAccent">#1AE18D</color>
+    <color name="sparkColor">#E5270C</color>
+    <color name="nestorColor">#2609C5</color>
+    <color name="roveColor">#811FF6</color>
+    <color name="fleetColor">#F7F01A</color>
+    <color name="etchColor">#138E5A</color>
+    <color name="boltColor">#EE900F</color>
+    <color name="echoColor">#14B7E1</color>
+
+
+
+    <color name="translucent">#F2F5A9</color>
+    <color name="barelyGray">#E6E6E6</color>
+    <color name="facebookBlue">#4267B2</color>
+    <color name="darkGreen">#1D6C5C</color>
+    <color name="transparent">#80000000</color>
+
+    <color name="lightGray">#C7C7C7</color>
+    <color name="darkGray">#6C6C6C</color>
+
+    <color name="placeholderColor">#C7C7C7</color>
+    <color name="textColor">#FFFFFF</color>
+    <color name="backgroundColor">#6C6C6C</color>
+    <color name="textBackgroundColor">#000000</color>
+    <color name="deleteColor">#DE1919</color>
+    <color name="inGameColor">#1D6C5C</color>
+    <color name="reverseInGameColor">#1AE18D</color>
+</resources>

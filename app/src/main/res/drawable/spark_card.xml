@@ -1,0 +1,16 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle" >
+
+    <!-- View background color -->
+    <solid
+        android:color="@color/sparkColor" >
+    </solid>
+
+    <stroke android:width="10px"
+        android:color="@color/textColor" />
+
+    <!-- The radius makes the corners rounded -->
+    <corners
+        android:radius="10dp">
+    </corners>
+</shape>

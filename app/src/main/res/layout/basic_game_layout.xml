@@ -1,0 +1,654 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:background="@drawable/background_rectangle"
+    android:layout_height="match_parent">
+
+
+    <LinearLayout
+        android:id="@+id/title_layout"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="12dp"
+        android:elevation="8dp"
+        android:layout_marginTop="30dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/game_name"
+            android:textStyle="bold"
+            android:textSize="25sp"
+            android:textColor="@color/textColor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            />
+
+        <Button
+            android:id="@+id/end_game_button"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_marginStart="5dp"
+            android:padding="0dp"
+            android:layout_gravity="center_vertical"
+            android:visibility="invisible"
+            android:textColor="@color/placeholderColor"
+            android:background="@drawable/rounded_green_rectangle_bordered"
+            android:text="End Game"
+            android:textAllCaps="false"
+            android:textSize="12sp"
+            style="@style/Widget.AppCompat.Button.Borderless"/>
+
+
+    </LinearLayout>
+
+    <include layout="@layout/board_layout"
+        android:layout_below="@id/title_layout"
+        android:layout_above="@+id/tile_played_layout"
+        android:layout_alignParentEnd="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+
+
+    <ImageButton
+        android:id="@+id/toggle_players_button"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_alignBottom="@+id/players_rv"
+        android:elevation="9dp"
+        android:scaleType="fitCenter"
+        android:padding="4dp"
+        android:layout_marginStart="-5dp"
+        android:src="@drawable/left_arrow"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:background="@drawable/barely_rounded_green_rectangle_bordered"
+        android:layout_toEndOf="@+id/players_rv"
+        />
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/players_rv"
+        android:layout_above="@+id/tile_played_layout"
+        android:paddingTop="15dp"
+        android:paddingBottom="15dp"
+        android:clipToPadding="false"
+        android:elevation="9dp"
+        android:layout_marginBottom="25dp"
+        android:background="@drawable/barely_rounded_lightgrey_rectangle"
+        android:layout_width="175dp"
+        android:layout_height="wrap_content"
+        />
+
+    <LinearLayout
+        android:id="@+id/tile_played_layout"
+        android:layout_above="@+id/grid_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_marginStart="15dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/placeholderColor"
+            android:text="Last Tile Played: "/>
+
+        <TextView
+            android:id="@+id/last_tile_played"
+            android:layout_marginStart="15dp"
+            android:padding="1dp"
+            android:textSize="12sp"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:enabled="false"
+            android:textColor="@color/textColor"
+            android:background="@drawable/barely_rounded_white_rectangle_bordered"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            />
+
+
+    </LinearLayout>
+
+
+
+
+    <LinearLayout
+        android:id="@+id/cards_layout"
+        android:layout_marginTop="30dp"
+        android:elevation="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_alignParentEnd="true"
+        android:layout_width="wrap_content"
+        android:background="@color/lightGray"
+        android:orientation="vertical"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_margin="5dp"
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_gravity="end"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_gravity="center_vertical"
+                android:orientation="vertical"
+                android:layout_marginEnd="4dp"
+                android:gravity="end"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/spark_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:textStyle="bold"
+                    android:textAlignment="textEnd"
+                    android:layout_weight="1"/>
+
+                <TextView
+                    android:id="@+id/spark_remaining"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:textStyle="italic"
+                    android:textAlignment="textEnd"
+                    android:text="R: "
+                    android:layout_weight="1"/>
+
+            </LinearLayout>
+
+            <Button
+                android:layout_width="40dp"
+                android:layout_height="60dp"
+                android:gravity="end"
+                android:id="@+id/spark_button"
+                android:background="@drawable/spark_card"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_margin="5dp"
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_gravity="end"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_gravity="center_vertical"
+                android:orientation="vertical"
+                android:layout_marginEnd="4dp"
+                android:gravity="end"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/nestor_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:textStyle="bold"
+                    android:textAlignment="textEnd"
+                    android:layout_weight="1"/>
+
+                <TextView
+                    android:id="@+id/nestor_remaining"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:textStyle="italic"
+                    android:textAlignment="textEnd"
+                    android:text="R: "
+                    android:layout_weight="1"/>
+
+            </LinearLayout>
+
+            <Button
+                android:layout_width="40dp"
+                android:layout_height="60dp"
+                android:gravity="end"
+                android:id="@+id/nestor_button"
+                android:background="@drawable/nestor_card"/>
+
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_margin="5dp"
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_gravity="end"
+            android:layout_weight="1">
+
+
+            <LinearLayout
+                android:layout_gravity="center_vertical"
+                android:orientation="vertical"
+                android:layout_marginEnd="4dp"
+                android:gravity="end"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/etch_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:textStyle="bold"
+                    android:textAlignment="textEnd"
+                    android:layout_weight="1"/>
+
+                <TextView
+                    android:id="@+id/etch_remaining"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:textStyle="italic"
+                    android:textAlignment="textEnd"
+                    android:text="R: "
+                    android:layout_weight="1"/>
+
+            </LinearLayout>
+
+            <Button
+                android:layout_width="40dp"
+                android:layout_height="60dp"
+                android:id="@+id/etch_button"
+                android:background="@drawable/etch_card"/>
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_margin="5dp"
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_gravity="end"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_gravity="center_vertical"
+                android:orientation="vertical"
+                android:layout_marginEnd="4dp"
+                android:gravity="end"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/rove_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:textStyle="bold"
+                    android:textAlignment="textEnd"
+                    android:layout_weight="1"/>
+
+                <TextView
+                    android:id="@+id/rove_remaining"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:textStyle="italic"
+                    android:textAlignment="textEnd"
+                    android:text="R: "
+                    android:layout_weight="1"/>
+
+            </LinearLayout>
+            <Button
+                android:layout_width="40dp"
+                android:layout_height="60dp"
+                android:id="@+id/rove_button"
+                android:background="@drawable/rove_card"/>
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_margin="5dp"
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_gravity="end"
+            android:layout_weight="1">
+
+
+            <LinearLayout
+                android:layout_gravity="center_vertical"
+                android:orientation="vertical"
+                android:layout_marginEnd="4dp"
+                android:gravity="end"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/fleet_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:textStyle="bold"
+                    android:textAlignment="textEnd"
+                    android:layout_weight="1"/>
+
+                <TextView
+                    android:id="@+id/fleet_remaining"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:textStyle="italic"
+                    android:text="R: "
+                    android:textAlignment="textEnd"
+                    android:layout_weight="1"/>
+
+            </LinearLayout>
+
+            <Button
+                android:layout_width="40dp"
+                android:layout_height="60dp"
+                android:id="@+id/fleet_button"
+                android:background="@drawable/fleet_card"/>
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_margin="5dp"
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_gravity="end"
+            android:layout_weight="1">
+
+            <LinearLayout
+                android:layout_gravity="center_vertical"
+                android:orientation="vertical"
+                android:layout_marginEnd="4dp"
+                android:gravity="end"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/echo_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:textStyle="bold"
+                    android:textAlignment="textEnd"
+                    android:layout_weight="1"/>
+
+                <TextView
+                    android:id="@+id/echo_remaining"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:textStyle="italic"
+                    android:text="R: "
+                    android:textAlignment="textEnd"
+                    android:layout_weight="1"/>
+
+            </LinearLayout>
+
+            <Button
+                android:layout_width="40dp"
+                android:layout_height="60dp"
+                android:id="@+id/echo_button"
+                android:background="@drawable/echo_card"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_margin="5dp"
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_gravity="end"
+            android:layout_weight="1">
+
+
+            <LinearLayout
+                android:layout_gravity="center_vertical"
+                android:orientation="vertical"
+                android:layout_marginEnd="4dp"
+                android:gravity="end"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/bolt_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:textStyle="bold"
+                    android:textAlignment="textEnd"
+                    android:layout_weight="1"/>
+
+                <TextView
+                    android:id="@+id/bolt_remaining"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:textStyle="italic"
+                    android:textAlignment="textEnd"
+                    android:text="R: "
+                    android:layout_weight="1"/>
+
+            </LinearLayout>
+
+            <Button
+                android:layout_width="40dp"
+                android:layout_height="60dp"
+                android:id="@+id/bolt_button"
+                android:background="@drawable/bolt_card"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+
+    <ImageButton
+        android:id="@+id/toggle_cards_btn"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginBottom="70dp"
+        android:layout_marginEnd="-5dp"
+        android:elevation="9dp"
+        android:scaleType="fitCenter"
+        android:padding="4dp"
+        android:src="@drawable/right_arrow"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:background="@drawable/barely_rounded_green_rectangle_bordered"
+        android:layout_alignBottom="@+id/cards_layout"
+        android:layout_toStartOf="@+id/cards_layout"
+        />
+
+
+
+
+
+    <LinearLayout
+        android:id="@+id/tile_button_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_alignStart="@+id/grid_layout"
+        android:layout_alignEnd="@+id/grid_layout"
+        android:visibility="invisible"
+        android:layout_below="@+id/grid_layout">
+
+        <Button
+            android:id="@+id/play_tile_btn"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="Play Tile"
+            android:layout_marginEnd="5dp"
+            android:textColor="@color/reverseInGameColor"
+            android:textAllCaps="false"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            />
+
+        <Button
+            android:id="@+id/discard_tile_btn"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:textColor="@color/deleteColor"
+            android:layout_marginStart="5dp"
+            android:layout_marginEnd="5dp"
+            android:text="Discard Tile"
+            android:textAllCaps="false"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            />
+
+        <Button
+            android:id="@+id/close_tiles_btn"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textColor"
+            android:layout_marginStart="10dp"
+            android:text="close"
+            android:textAllCaps="false"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            />
+    </LinearLayout>
+
+
+
+    <ImageButton
+        android:id="@+id/toggle_tiles_btn"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginBottom="10dp"
+        android:layout_marginEnd="-5dp"
+        android:elevation="9dp"
+        android:scaleType="fitCenter"
+        android:padding="4dp"
+        android:src="@drawable/left_arrow"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:background="@drawable/barely_rounded_green_rectangle_bordered"
+        android:layout_alignBottom="@+id/grid_layout"
+        android:layout_toEndOf="@+id/grid_layout"
+        />
+
+
+
+
+    <GridLayout
+        android:id="@+id/grid_layout"
+        android:layout_above="@+id/draw_tile_btn"
+        android:layout_width="wrap_content"
+        android:orientation="horizontal"
+        android:layout_alignParentStart="true"
+        android:rowCount="2"
+        android:columnCount="3"
+        android:elevation="10dp"
+        android:background="@drawable/barely_rounded_lightgrey_rectangle"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/tile1_btn"
+            android:layout_margin="5dp"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            android:textColor="@color/textColor"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:background="@drawable/barely_rounded_white_rectangle_bordered"
+            />
+
+        <Button
+            android:id="@+id/tile2_btn"
+            android:layout_margin="5dp"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            android:textColor="@color/textColor"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:background="@drawable/barely_rounded_white_rectangle_bordered"
+
+            />
+        <Button
+            android:id="@+id/tile3_btn"
+            android:layout_margin="5dp"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            android:textColor="@color/textColor"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:background="@drawable/barely_rounded_white_rectangle_bordered"
+
+            />
+
+
+        <Button
+            android:id="@+id/tile4_btn"
+            android:layout_margin="5dp"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            android:textColor="@color/textColor"
+            android:background="@drawable/barely_rounded_white_rectangle_bordered"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            />
+        <Button
+            android:id="@+id/tile5_btn"
+            android:layout_margin="5dp"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            android:textColor="@color/textColor"
+            android:background="@drawable/barely_rounded_white_rectangle_bordered"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            />
+        <Button
+            android:id="@+id/tile6_btn"
+            android:layout_margin="5dp"
+            android:layout_width="75dp"
+            android:layout_height="75dp"
+            android:textColor="@color/textColor"
+            android:background="@drawable/barely_rounded_white_rectangle_bordered"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            />
+
+
+    </GridLayout>
+
+
+    <Button
+        android:id="@+id/draw_tile_btn"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:layout_marginBottom="20dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/placeholderColor"
+        android:text="Draw Tile"
+        android:visibility="invisible"
+        android:textAllCaps="false"
+        style="@style/Widget.AppCompat.Button.Borderless"/>
+
+
+
+    <include
+        layout="@layout/fragment_options"
+        android:id="@+id/buysell_view"
+        android:visibility="invisible"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="0dp"
+        android:layout_marginBottom="0dp" />
+
+
+    <Button
+        android:id="@+id/start_game_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:textColor="@color/colorAccent"
+        android:layout_margin="10dp"
+        android:elevation="7dp"
+        android:textAllCaps="false"
+        android:background="@drawable/rounded_grey_rectangle_bordered"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:text="Start Game"
+
+        />
+
+
+
+
+</RelativeLayout>
