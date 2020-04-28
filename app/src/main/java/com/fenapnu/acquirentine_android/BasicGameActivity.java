@@ -36,8 +36,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -268,7 +266,6 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                     return;
                 }
                 setAndShowPopupData("Bolt");
-
             }
         });
 
@@ -316,7 +313,6 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                 AlertDialog alertDialog = alertDialogBuilder.create();
                 // show it
                 alertDialog.show();
-
             }
         });
 
@@ -1245,7 +1241,7 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
         }
         tileButtonsLayout.setVisibility(View.INVISIBLE);
 
-        gameDataController.removeTileFromHand(selectedTile, currentPlayer);
+        gameDataController.discardTile(selectedTile, currentPlayer);
     }
 
 
@@ -1276,6 +1272,13 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                     game.setTiles(newTileBag);
                 }
 
+                Map<String, Long> discard = (Map<String, Long>) documentSnapshot.get("discarded");
+                if(discard != null){
+                    game.setDiscarded(discard);
+
+                }else{
+                    game.setDiscarded(new HashMap<String, Long>());
+                }
 
                 game.setGameId((String) documentSnapshot.get("gameId"));
                 game.setSearchable((boolean) documentSnapshot.get("searchable"));
@@ -1336,9 +1339,15 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                 gameListener.remove();
             }
 
-            onBackPressed();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    onBackPressed();
+                }
+            });
             return;
         }
+
 
         Map<String, Long> cardsRemaining = gameDataController.cards;
         Map<String, Player> players = gameDataController.players;
@@ -1403,11 +1412,6 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
         }
 
 
-//        if(currentPlayer != null && gameDataController.tiles.size() > 1) {
-//
-//            drawTileBtn.setVisibility(View.VISIBLE);
-//
-//        }
 
         if(gameDataController.isGameStarted()){
             startGameBtn.setVisibility(View.INVISIBLE);
@@ -1558,18 +1562,26 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
 
 
+
     public void setBoardTiles(){
 
         Map<String, Long> tiles = new HashMap<>(gameDataController.getTiles());
         Map<String, Player> players = new HashMap<>(gameDataController.getPlayers());
+        Map<String, Long> discarded = new HashMap<>(gameDataController.getDiscarded());
 
         for(Player p : players.values()){
 
             for(String s : p.getTiles()){
-
                 tiles.put(s, (long) 1);
             }
         }
+
+
+        for(String s : discarded.keySet()){
+
+            tiles.put(s, (long)1);
+        }
+
 
         for(TextView tv : boardPlaceList){
 

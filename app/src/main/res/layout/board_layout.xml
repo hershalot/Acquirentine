@@ -642,7 +642,7 @@
 
             <TextView
                 android:id="@+id/e8"
-                android:text="9E"
+                android:text="8E"
                 android:padding="4dp"
                 android:textColor="@color/textColor"
                 android:elevation="3dp"

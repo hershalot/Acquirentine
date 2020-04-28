@@ -4,7 +4,6 @@ package com.fenapnu.acquirentine_android;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -21,8 +20,9 @@ public class GameObject {
 
     List<String> playerOrder;
     Map<String, Long> tiles;
+    Map<String, Long> discarded;
     Map<String, Long> cards;
-
+    Map<Corporation, Long> liveCorporations;
 
     boolean searchable = true;
     boolean gameStarted = false;
@@ -41,6 +41,7 @@ public class GameObject {
 
         List<String> grid =  Arrays.asList("1A","2A","3A","4A","5A","6A","7A","8A","9A","10A","1B","2B","3B","4B","5B","6B","7B","8B","9B","10B","1C","2C","3C","4C","5C","6C","7C","8C","9C","10C","1D","2D","3D","4D","5D","6D","7D","8D","9D","10D","1E","2E","3E","4E","5E","6E","7E","8E","9E","10E","1F","2F","3F","4F","5F","6F","7F","8F","9F","10F","1G","2G","3G","4G","5G","6G","7G","8G","9G","10G","1H","2H","3H","4H","5H","6H","7H","8H","9H","10H","1I","2I","3I","4I","5I","6I","7I","8I","9I","10I","1J","2J","3J","4J","5J","6J","7J","8J","9J","10J");
         tiles = new HashMap<>();
+        discarded = new HashMap<>();
         cards = new HashMap<>();
         players = new HashMap<>();
         playerOrder = new ArrayList<>();
@@ -119,6 +120,14 @@ public class GameObject {
 
     public void setMoveDescription(String moveDescription) {
         this.moveDescription = moveDescription;
+    }
+
+    public void setDiscarded(Map<String, Long> discarded) {
+        this.discarded = discarded;
+    }
+
+    public Map<String, Long> getDiscarded() {
+        return discarded;
     }
 
     public String getMoveDescription() {
@@ -230,13 +239,18 @@ public class GameObject {
     //Tile Functions
     public void playTile(String tile, Player player){
 
-        removeTileFromHand(tile, player);
-        //remove tile from dictionary
+        String playerUpdateString = "players." + player.getUserId() + ".tiles";
+
+        int pos = player.getTiles().indexOf(tile);
+        player.getTiles().set(pos, "");
+
 
         lastTilePlayed = tile;
 
         Map<String, Object> tilePlayed = new HashMap<>();
         tilePlayed.put("lastTilePlayed", tile);
+        tilePlayed.put(playerUpdateString, player.getTiles());
+
         String s = player.getName() + " played tile " + tile;
         tilePlayed.put("moveDescription", s);
 
@@ -255,17 +269,13 @@ public class GameObject {
             return "";
         }
 
-        Object[] o = (Object[]) getTiles().keySet().toArray();
-
-        String tile = (String) o[new Random().nextInt(o.length)];
-        getTiles().remove(tile);
-
+        String tile = drawRandomTile();
         removeTileFromMainPile(tile);
-
         return tile;
 
 
     }
+
 
 
 
@@ -276,10 +286,7 @@ public class GameObject {
             return "";
         }
 
-        Object[] o = (Object[]) this.getTiles().keySet().toArray();
-
-        String tile = (String) o[new Random().nextInt(o.length)];
-        getTiles().remove(tile);
+        String tile = drawRandomTile();
 
         addTileToHand(tile, player);
 
@@ -303,7 +310,7 @@ public class GameObject {
     }
 
 
-    public void removeTileFromHand(String tile, Player player){
+    public void discardTile(String tile, Player player){
 
         String playerUpdateString = "players." + player.getUserId() + ".tiles";
 
@@ -313,8 +320,12 @@ public class GameObject {
         Map<String, Object> toRemove = new HashMap<>();
         toRemove.put(playerUpdateString, player.getTiles());
 
+        this.discarded.put(tile, (long)1);
+        toRemove.put("discarded", this.discarded);
+
         FirebaseFirestore.getInstance().collection("ActiveGames").document(getGameId()).update(toRemove);
     }
+
 
 
 
@@ -363,10 +374,9 @@ public class GameObject {
 
 
         Map<String, Object> bankUpdate = new HashMap<>();
+
         bankUpdate.put(sBankCorpGain,newCountBankGain);
         bankUpdate.put(sBankCorpRemove,newCountBankRemove);
-
-        Map<String, Object> playerUpdate = new HashMap<>();
         bankUpdate.put(sPlayerRemoving,newCountPlayerRemove);
         bankUpdate.put(sPlayerGaining,newCountPlayerGain);
 
@@ -374,10 +384,7 @@ public class GameObject {
         bankUpdate.put("moveDescription", s);
 
 
-
         FirebaseFirestore.getInstance().collection("ActiveGames").document(getGameId()).update(bankUpdate);
-        FirebaseFirestore.getInstance().collection("ActiveGames").document(getGameId()).update(playerUpdate);
-
 
 
     }
@@ -397,14 +404,12 @@ public class GameObject {
 
         Map<String, Object> bankUpdate = new HashMap<>();
         bankUpdate.put(sBank,newCountBank);
-
-        Map<String, Object> playerUpdate = new HashMap<>();
         bankUpdate.put(sPlayer,newCountPlayer);
+
         String s = player.getName() + " sold " + number + " " + corporation;
         bankUpdate.put("moveDescription", s);
 
         FirebaseFirestore.getInstance().collection("ActiveGames").document(getGameId()).update(bankUpdate);
-        FirebaseFirestore.getInstance().collection("ActiveGames").document(getGameId()).update(playerUpdate);
 
     }
 
@@ -423,15 +428,12 @@ public class GameObject {
 
         Map<String, Object> bankUpdate = new HashMap<>();
         bankUpdate.put(sBank,newCountBank);
-
-        Map<String, Object> playerUpdate = new HashMap<>();
         bankUpdate.put(sPlayer,newCountPlayer);
 
         String s = player.getName() + " buys " + number + " " + corporation;
         bankUpdate.put("moveDescription", s);
 
         FirebaseFirestore.getInstance().collection("ActiveGames").document(getGameId()).update(bankUpdate);
-        FirebaseFirestore.getInstance().collection("ActiveGames").document(getGameId()).update(playerUpdate);
     }
 
 
@@ -446,10 +448,54 @@ public class GameObject {
         Map<String, Object> start = new HashMap<>();
         start.put("gameStarted", true);
         start.put("moveDescription", "Game Started");
+
+
+        setInitialTiles();
+
+
+        for(Player p : players.values()){
+            String playerString = "players." + p.getUserId() + ".tiles";
+            start.put(playerString, p.getTiles());
+
+        }
+        start.put("tiles", tiles);
         FirebaseFirestore.getInstance().collection("ActiveGames").document(getGameId()).update(start);
 
+    }
+
+
+
+
+
+    public void setInitialTiles(){
+
+        int i = 0;
+        while (i < 6){
+
+            for (Player p : players.values()){
+
+                String s = drawRandomTile();
+                p.getTiles().set(i, s);
+            }
+            i++;
+        }
+    }
+
+
+    public String drawRandomTile(){
+        Object[] o =  getTiles().keySet().toArray();
+
+        String tile = (String) o[new Random().nextInt(o.length)];
+        getTiles().remove(tile);
+
+        return tile;
 
     }
+
+
+
+
+
 
 
 }
