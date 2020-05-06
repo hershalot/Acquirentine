@@ -10,8 +10,8 @@ android {
         applicationId "com.fenapnu.acquirentine_android"
         minSdkVersion 24
         targetSdkVersion 28
-        versionCode 10
-        versionName "1.1"
+        versionCode 12
+        versionName "1.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -23,8 +23,9 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-
 }
+
+
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])

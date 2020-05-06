@@ -4,6 +4,7 @@ import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -120,7 +121,6 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
     Button playTile;
     Button discardTile;
     Button closeTiles;
-    Button drawTileBtn;
     Button startGameBtn;
     ImageButton toggleCardsButton;
 
@@ -156,25 +156,38 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
     String selectedTile = "";
     String selectedCorporation = "";
 
+
+
+    @Override
+    protected void onSaveInstanceState(Bundle state) {
+        super.onSaveInstanceState(state);
+        String json = DataManager.serializeGameData(gameDataController);
+
+        state.putSerializable("gameData", json);
+        state.putSerializable("userId", currentUid);
+        state.putSerializable("userName", userName);
+        state.putSerializable("gameName", gameName);
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.basic_game_layout);
+        int currentOrientation = getResources().getConfiguration().orientation;
+        if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+            // Landscape
+            setContentView(R.layout.basic_game_layout_landscape);
+        }
+        else {
+            // Portrait
+            setContentView(R.layout.basic_game_layout);
+        }
+
+
 
         recyclerView = findViewById(R.id.players_rv);
         cardsLayout = findViewById(R.id.cards_layout);
 
-        int VERTICAL_ITEM_SPACE = 5;
-        recyclerView.addItemDecoration(new SpacingItemDecoration(VERTICAL_ITEM_SPACE, VERTICAL_ITEM_SPACE));
-
-        adapter = new PlayersItemAdapter(this, playerList, gameDataController,this);
-        // Attach the adapter to the recyclerview to populate items
-
-        // Set layout manager to position the items
-        final LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
-        recyclerView.setLayoutManager(mLinearLayoutManager);
-        recyclerView.setAdapter(adapter);
 
         tileBtn1 = findViewById(R.id.tile1_btn);
         tileBtn2 = findViewById(R.id.tile2_btn);
@@ -282,7 +295,6 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
             @Override
             public void onClick(View v) {
 
-
                 AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
                         BasicGameActivity.this);
                 // set title
@@ -317,9 +329,6 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
         });
 
 
-
-
-
         tileLayout = findViewById(R.id.grid_layout);
         toggleTileGrid = findViewById(R.id.toggle_tiles_btn);
         toggleTileGrid.setOnClickListener(new View.OnClickListener() {
@@ -328,7 +337,6 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                 toggleTilesView();
             }
         });
-
 
         toggleCardsButton = findViewById(R.id.toggle_cards_btn);
         toggleCardsButton.setOnClickListener(new View.OnClickListener() {
@@ -346,7 +354,6 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
         echoCount = findViewById(R.id.echo_count);
         boltCount = findViewById(R.id.bolt_count);
 
-
         sparkRemaining = findViewById(R.id.spark_remaining);
         nestorRemaining = findViewById(R.id.nestor_remaining);
         etchRemaining = findViewById(R.id.etch_remaining);
@@ -355,12 +362,11 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
         boltRemaining = findViewById(R.id.bolt_remaining);
         echoRemaining = findViewById(R.id.echo_remaining);
 
-
         playTile = findViewById(R.id.play_tile_btn);
         playTile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                playTileAction();
+                determinePlayTileAction();
                 resetButtonBackgrounds();
                 selectedTile = "";
             }
@@ -377,14 +383,7 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
         });
         tileButtonsLayout = findViewById(R.id.tile_button_layout);
 
-        drawTileBtn = findViewById(R.id.draw_tile_btn);
-//        drawTileBtn.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                drawTileAction();
-//
-//            }
-//        });
+
 
         tileBtn1.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -397,8 +396,8 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                 if(tileBtn1.getText().equals("Draw") && gameDataController.getTiles().size() > 0){
                     drawTileAction();
                     return;
-                }else if(gameDataController.getTiles().size() < 1){
-                    Toast.makeText(BasicGameActivity.this, "No Tiles Remain", Toast.LENGTH_LONG).show();
+                }else if(tileBtn1.getText().equals("Draw") && gameDataController.getTiles().size() < 1){
+                    Toast.makeText(BasicGameActivity.this, "No Tiles Remain", Toast.LENGTH_SHORT).show();
                     tileBtn1.setVisibility(View.INVISIBLE);
                     return;
                 }
@@ -422,8 +421,8 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                 if(tileBtn2.getText().equals("Draw") && gameDataController.getTiles().size() > 0){
                     drawTileAction();
                     return;
-                }else if(gameDataController.getTiles().size() < 1){
-                    Toast.makeText(BasicGameActivity.this, "No Tiles Remain", Toast.LENGTH_LONG).show();
+                }else if(tileBtn2.getText().equals("Draw") && gameDataController.getTiles().size() < 1){
+                    Toast.makeText(BasicGameActivity.this, "No Tiles Remain", Toast.LENGTH_SHORT).show();
                     tileBtn2.setVisibility(View.INVISIBLE);
                     return;
                 }
@@ -446,8 +445,8 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                 if(tileBtn3.getText().equals("Draw") && gameDataController.getTiles().size() > 0){
                     drawTileAction();
                     return;
-                }else if(gameDataController.getTiles().size() < 1){
-                    Toast.makeText(BasicGameActivity.this, "No Tiles Remain", Toast.LENGTH_LONG).show();
+                }else if(tileBtn3.getText().equals("Draw") && gameDataController.getTiles().size() < 1){
+                    Toast.makeText(BasicGameActivity.this, "No Tiles Remain", Toast.LENGTH_SHORT).show();
                     tileBtn3.setVisibility(View.INVISIBLE);
                     return;
                 }
@@ -469,8 +468,8 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                 if(tileBtn4.getText().equals("Draw") && gameDataController.getTiles().size() > 0){
                     drawTileAction();
                     return;
-                }else if(gameDataController.getTiles().size() < 1){
-                    Toast.makeText(BasicGameActivity.this, "No Tiles Remain", Toast.LENGTH_LONG).show();
+                }else if(tileBtn4.getText().equals("Draw") && gameDataController.getTiles().size() < 1){
+                    Toast.makeText(BasicGameActivity.this, "No Tiles Remain", Toast.LENGTH_SHORT).show();
                     tileBtn4.setVisibility(View.INVISIBLE);
                     return;
                 }
@@ -492,8 +491,8 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                 if(tileBtn5.getText().equals("Draw") && gameDataController.getTiles().size() > 0){
                     drawTileAction();
                     return;
-                }else if(gameDataController.getTiles().size() < 1){
-                    Toast.makeText(BasicGameActivity.this, "No Tiles Remain", Toast.LENGTH_LONG).show();
+                }else if(tileBtn5.getText().equals("Draw") && gameDataController.getTiles().size() < 1){
+                    Toast.makeText(BasicGameActivity.this, "No Tiles Remain", Toast.LENGTH_SHORT).show();
                     tileBtn5.setVisibility(View.INVISIBLE);
                     return;
                 }
@@ -518,8 +517,8 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                 if(tileBtn6.getText().equals("Draw") && gameDataController.getTiles().size() > 0){
                     drawTileAction();
                     return;
-                }else if(gameDataController.getTiles().size() < 1){
-                    Toast.makeText(BasicGameActivity.this, "No Tiles Remain", Toast.LENGTH_LONG).show();
+                }else if(tileBtn6.getText().equals("Draw") && gameDataController.getTiles().size() < 1){
+                    Toast.makeText(BasicGameActivity.this, "No Tiles Remain", Toast.LENGTH_SHORT).show();
                     tileBtn6.setVisibility(View.INVISIBLE);
                     return;
                 }
@@ -541,28 +540,24 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                 return false;
             }
         });
-
         tileBtn2.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
                 return false;
             }
         });
-
         tileBtn3.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
                 return false;
             }
         });
-
         tileBtn4.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
                 return false;
             }
         });
-
         tileBtn5.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -577,7 +572,6 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
         });
 
 
-
         tileBtnArray.add(tileBtn1);
         tileBtnArray.add(tileBtn2);
         tileBtnArray.add(tileBtn3);
@@ -587,69 +581,6 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
         startGameBtn = findViewById(R.id.start_game_btn);
         gameNameTV = findViewById(R.id.game_name);
-
-        Intent i = getIntent();
-        boolean sCreator = i.getBooleanExtra("isCreator", false);
-
-        if(sCreator){
-
-
-            gameDataController = new GameObject();
-            currentUid = i.getStringExtra("userId");
-            userName = i.getStringExtra("userName");
-            gameName = i.getStringExtra("gameName");
-            String title = gameName + "'s Game";
-            gameNameTV.setText(title);
-            endGame.setVisibility(View.VISIBLE);
-            setNewGameData();
-
-        }else{
-
-            String sGame  = i.getStringExtra("gameObject");
-            gameDataController = DataManager.deserializeGameData(sGame);
-            currentUid = i.getStringExtra("userId");
-            userName = i.getStringExtra("userName");
-            gameName = gameDataController.gameName;
-
-            gameInSession = gameDataController.isGameStarted();
-            String title = gameName + "'s Game";
-            gameNameTV.setText(title);
-
-            if(gameDataController.isGameStarted()){
-                startGameBtn.setVisibility(View.GONE);
-                if(currentUid.equals(gameDataController.getCreator())){
-                    endGame.setVisibility(View.VISIBLE);
-                }
-            }else if(!currentUid.equals(gameDataController.getCreator())){
-                String s = "Leave Game";
-                startGameBtn.setText(s);
-                startGameBtn.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-
-                        gameDataController.removePlayer(currentUid, currentPlayer.startTile);
-                        onBackPressed();
-                    }
-                });
-
-            }else{
-                endGame.setVisibility(View.VISIBLE);
-                startGameBtn.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        startGameCheck();
-                    }
-                });
-            }
-
-            if(gameDataController.players.get(currentUid) != null){
-                setGameListener();
-            }else {
-                addPlayer();
-            }
-        }
-
-
 
         buyButton = findViewById(R.id.buy_btn);
         buyButton.setOnClickListener(new View.OnClickListener() {
@@ -664,7 +595,7 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                 Long a = Long.valueOf(buyAmount);
                 int amount = a.intValue();
 
-                if(amount > 4){
+                if(amount > 3){
                     Toast.makeText(BasicGameActivity.this, "What are you, a cheater?", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -675,7 +606,7 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
                     gameDataController.buy(amount, currentPlayer, selectedCorporation);
 
-                    if(selectedCorporation.equals("Etch") && amount == 4){
+                    if(selectedCorporation.equals("Etch") && amount == 3){
                         Toast.makeText(BasicGameActivity.this, "Hersh Mgersh's Ertches n Skertches", Toast.LENGTH_SHORT).show();
                     }
 
@@ -722,7 +653,7 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
                 String selected = tradeSpinner.getSelectedItem().toString();
 
-                if(selected.equals("Select Corporation") || selected.equals(selectedCorporation)){
+                if(selected.equals("Select") || selected.equals(selectedCorporation)){
                     Toast.makeText(BasicGameActivity.this, "Select a proper corp to trade", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -807,7 +738,160 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
         buyLbl = findViewById(R.id.buy_tv);
         sellLbl = findViewById(R.id.sell_tv);
         tradeLbl = findViewById(R.id.trade_tv);
+
+
+
         buyselltradeView = findViewById(R.id.buysell_view);
+
+
+
+
+
+
+        //if there is a saved instance state set data using it, otherwise use intent data
+        if ((savedInstanceState != null) && (savedInstanceState.getSerializable("gameData") != null)) {
+
+            currentUid = (String) savedInstanceState.getSerializable("userId");
+            gameDataController = DataManager.deserializeGameData((String) savedInstanceState.getSerializable("gameData"));
+            currentPlayer = gameDataController.players.get(currentUid);
+            userName = (String) savedInstanceState.getSerializable("userName");
+            gameName = (String) savedInstanceState.getSerializable("gameName");
+
+
+            if (gameDataController.getCreator().equals(currentUid)) {
+
+                String title = gameName + "'s Game";
+                gameNameTV.setText(title);
+                endGame.setVisibility(View.VISIBLE);
+
+            }else{
+                gameInSession = gameDataController.isGameStarted();
+                String title = gameName + "'s Game";
+                gameNameTV.setText(title);
+
+                if (gameDataController.isGameStarted()) {
+                    startGameBtn.setVisibility(View.GONE);
+                    if (currentUid.equals(gameDataController.getCreator())) {
+                        endGame.setVisibility(View.VISIBLE);
+                    }
+                } else if (!currentUid.equals(gameDataController.getCreator())) {
+                    String s = "Leave Game";
+                    startGameBtn.setText(s);
+                    startGameBtn.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+
+                            gameDataController.removePlayer(currentUid, currentPlayer.startTile);
+                            onBackPressed();
+                        }
+                    });
+
+                } else {
+                    endGame.setVisibility(View.VISIBLE);
+                    startGameBtn.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            startGameCheck();
+                        }
+                    });
+                }
+            }
+
+
+            setGameListener();
+
+        }else {
+
+            Intent i = getIntent();
+            boolean sCreator = i.getBooleanExtra("isCreator", false);
+
+            if (sCreator) {
+
+                gameDataController = new GameObject();
+                currentUid = i.getStringExtra("userId");
+                userName = i.getStringExtra("userName");
+                gameName = i.getStringExtra("gameName");
+                String title = gameName + "'s Game";
+                gameNameTV.setText(title);
+                endGame.setVisibility(View.VISIBLE);
+                setNewGameData();
+
+            } else {
+
+                String sGame = i.getStringExtra("gameObject");
+                gameDataController = DataManager.deserializeGameData(sGame);
+                currentUid = i.getStringExtra("userId");
+                userName = i.getStringExtra("userName");
+                gameName = gameDataController.gameName;
+
+                gameInSession = gameDataController.isGameStarted();
+                String title = gameName + "'s Game";
+                gameNameTV.setText(title);
+
+                if (gameDataController.isGameStarted()) {
+                    startGameBtn.setVisibility(View.GONE);
+                    if (currentUid.equals(gameDataController.getCreator())) {
+                        endGame.setVisibility(View.VISIBLE);
+                    }
+                } else if (!currentUid.equals(gameDataController.getCreator())) {
+                    String s = "Leave Game";
+                    startGameBtn.setText(s);
+                    startGameBtn.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+
+                            gameDataController.removePlayer(currentUid, currentPlayer.startTile);
+                            onBackPressed();
+                        }
+                    });
+
+                } else {
+                    endGame.setVisibility(View.VISIBLE);
+                    startGameBtn.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            startGameCheck();
+                        }
+                    });
+                }
+
+                if (gameDataController.players.get(currentUid) != null) {
+                    setGameListener();
+                } else {
+                    addPlayer();
+                }
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        int VERTICAL_ITEM_SPACE = 5;
+        recyclerView.addItemDecoration(new SpacingItemDecoration(VERTICAL_ITEM_SPACE, VERTICAL_ITEM_SPACE));
+
+        adapter = new PlayersItemAdapter(this, playerList, gameDataController,this);
+        // Attach the adapter to the recyclerview to populate items
+
+        // Set layout manager to position the items
+        final LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(mLinearLayoutManager);
+        recyclerView.setAdapter(adapter);
 
 
         tradeSpinner = findViewById(R.id.trade_spinner);
@@ -831,12 +915,6 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
     }
 
 
-    private void tileClickAction(){
-
-
-
-
-    }
 
 
     private void toggleTilesView(){
@@ -853,6 +931,9 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
             animationB.setDuration(300);
             animationB.start();
 
+            resetButtonBackgrounds();
+            selectedTile = "";
+            tileButtonsLayout.setVisibility(View.INVISIBLE);
             toggleTileGrid.setImageDrawable(getDrawable(R.drawable.right_arrow));
 
         }else {
@@ -1205,7 +1286,6 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
 
         if(!canDraw()){
-            drawTileBtn.setVisibility(View.INVISIBLE);
             return;
         }
 
@@ -1220,15 +1300,16 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
 
 
-    private void playTileAction() {
+    private void playTileAction(String tile) {
 
-        if(selectedTile.equals("Draw") || selectedTile.equals("")){
+        if(tile.equals("Draw") || tile.equals("")){
             return;
         }
 
 
         tileButtonsLayout.setVisibility(View.INVISIBLE);
-        gameDataController.playTile(selectedTile, currentPlayer);
+        lastPlayedTileLbl.setText(tile);
+        gameDataController.playTile(tile, currentPlayer);
     }
 
 
@@ -1250,6 +1331,12 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
     private void setGameListener(){
 
 
+        if(gameListener != null){
+
+            gameListener.remove();
+            gameListener = null;
+
+        }
         gameListener = FirebaseFirestore.getInstance().collection("ActiveGames").document(gameDataController.gameId).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
@@ -1264,6 +1351,15 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                 game.setPlayerOrder((List<String>) documentSnapshot.get("playerOrder"));
                 game.setCards((Map<String, Long>) documentSnapshot.get("cards"));
                 game.setGameName((String) documentSnapshot.get("gameName"));
+
+                Map<String, List<String>> liveCorps = (Map<String, List<String>>) documentSnapshot.get("liveCorporations");
+
+                if(liveCorps == null){
+                    game.setLiveCorporations(new HashMap<String, List<String>>());
+                }else{
+                    game.setLiveCorporations(liveCorps);
+                }
+
 
                 Map<String, Long>  newTileBag = (Map<String, Long>) documentSnapshot.get("tiles");
                 if(newTileBag == null){
@@ -1369,7 +1465,6 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
         String rBolt = "R: " + cardsRemaining.get(Corporation.BOLT.label) + " ";
         String rEcho = "R: " + cardsRemaining.get(Corporation.ECHO.label) + " ";
 
-
         sparkRemaining.setText(rSpark);
         nestorRemaining.setText(rNestor);
         roveRemaining.setText(rRove);
@@ -1380,6 +1475,7 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
 
         if(currentPlayer != null){
+
             String sSpark = "" + currentPlayer.cards.get(Corporation.SPARK.label) + " Spark ";
             String sNestor = "" + currentPlayer.cards.get(Corporation.NESTOR.label) + " Nestor ";
             String sFleet= "" + currentPlayer.cards.get(Corporation.FLEET.label) + " Fleet ";
@@ -1403,12 +1499,12 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
         if(gameDataController.isGameStarted()){
 
             if(!gameDataController.getMoveDescription().equals(oldMessage)){
-                Toast.makeText(this, gameDataController.moveDescription, Toast.LENGTH_LONG).show();
+                Toast.makeText(this, gameDataController.moveDescription, Toast.LENGTH_SHORT).show();
             }
 
-            if(!gameDataController.getLastTilePlayed().equals(oldTile)){
-                lastPlayedTileLbl.setText(gameDataController.getLastTilePlayed());
-            }
+
+            lastPlayedTileLbl.setText(gameDataController.getLastTilePlayed());
+
         }
 
 
@@ -1445,10 +1541,7 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
         }
 
-        if(!canDraw()){
 
-            drawTileBtn.setVisibility(View.INVISIBLE);
-        }
     }
 
 
@@ -1565,37 +1658,284 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
     public void setBoardTiles(){
 
-        Map<String, Long> tiles = new HashMap<>(gameDataController.getTiles());
-        Map<String, Player> players = new HashMap<>(gameDataController.getPlayers());
-        Map<String, Long> discarded = new HashMap<>(gameDataController.getDiscarded());
+        Map<String, Long> tiles = new HashMap<>(gameDataController.aggregateUnplayedTiles());
 
-        for(Player p : players.values()){
-
-            for(String s : p.getTiles()){
-                tiles.put(s, (long) 1);
-            }
-        }
-
-
-        for(String s : discarded.keySet()){
-
-            tiles.put(s, (long)1);
-        }
-
+        Map<String, List<String>> corps = gameDataController.liveCorporations;
+        List<String> spark = corps.get("Spark");
+        List<String> nestor = corps.get("Nestor");
+        List<String> rove = corps.get("Rove");
+        List<String> fleet = corps.get("Fleet");
+        List<String> etch = corps.get("Etch");
+        List<String> bolt = corps.get("Bolt");
+        List<String> echo = corps.get("Echo");
 
         for(TextView tv : boardPlaceList){
 
             String title = (String) tv.getText();
 
-            if (tiles.get(title) == null) {
-                tv.setTextColor(getColor(R.color.textBackgroundColor));
-                tv.setBackground(getDrawable(R.drawable.barely_rounded_text_rectangle));
-            }else{
+            if (tiles.get(title) != null) {
+
                 tv.setTextColor(getColor(R.color.textColor));
                 tv.setBackground(getDrawable(R.drawable.barely_rounded_text_background_rectangle));
 
+            }else if(spark != null && spark.contains(title)){
+
+                //spark colors
+                tv.setTextColor(getColor(R.color.textColor));
+                tv.setBackground(getDrawable(R.drawable.spark_tile));
+
+            }else if(nestor != null && nestor.contains(title)){
+
+                //nestor colors
+                tv.setTextColor(getColor(R.color.textColor));
+                tv.setBackground(getDrawable(R.drawable.nestor_tile));
+
+            }else if(rove != null && rove.contains(title)){
+
+                //rove colors
+                tv.setTextColor(getColor(R.color.textColor));
+                tv.setBackground(getDrawable(R.drawable.rove_tile));
+
+            }else if(fleet != null && fleet.contains(title)){
+
+                //fleet colors
+                tv.setTextColor(getColor(R.color.textColor));
+                tv.setBackground(getDrawable(R.drawable.fleet_tile));
+
             }
+            else if(etch != null && etch.contains(title)){
+
+                //etch colors
+                tv.setTextColor(getColor(R.color.textColor));
+                tv.setBackground(getDrawable(R.drawable.etch_tile));
+
+            } else if(echo != null && echo.contains(title)){
+
+                //echo colors
+                tv.setTextColor(getColor(R.color.textColor));
+                tv.setBackground(getDrawable(R.drawable.echo_tile));
+
+            }else if(bolt != null && bolt.contains(title)){
+
+                //bolt colors
+                tv.setTextColor(getColor(R.color.textColor));
+                tv.setBackground(getDrawable(R.drawable.bolt_tile));
+
+            } else{
+                tv.setTextColor(getColor(R.color.textBackgroundColor));
+                tv.setBackground(getDrawable(R.drawable.barely_rounded_text_rectangle));
+
+            }
+
         }
+    }
+
+
+
+
+    public void determinePlayTileAction(){
+        String tile = selectedTile;
+        //Here we need to evaluate the tile being laid and extract further actions
+        List<String> results = gameDataController.evaluateAdjacentTiles(tile);
+
+        if(results.size() < 1){
+            return;
+        }
+
+        String message = results.get(0);
+
+        Map<String, Long> uplayedTiles = gameDataController.aggregateUnplayedTiles();
+
+        boolean didPlay = false;
+
+        switch (message){
+
+            case "playable":
+                //playable, nothing special here
+                playTileAction(tile);
+                break;
+
+            case "unplayable":
+                //tile is unplayable, show user the prompt and do not play tiles
+                Toast.makeText(this, "", Toast.LENGTH_SHORT).show();
+
+                break;
+
+            case "starter":
+
+                //here we need to se the new corp tile
+                results.remove(0);
+                List<String> available = new ArrayList<>();
+
+                List<String> finalAStartingCorpTileArray = new ArrayList<>();
+
+
+                for(String t : results){
+                    if(uplayedTiles.get(t) == null){
+                        finalAStartingCorpTileArray.add(t);
+                    }
+                }
+                finalAStartingCorpTileArray.add(tile);
+
+
+                for(String s : gameDataController.corporationNames){
+                    if(gameDataController.getLiveCorporations().get(s) == null){
+                        available.add(s);
+                    }
+                }
+
+                if(available.size() == 0){
+                    Toast.makeText(this, "No Corporations Remaining to start", Toast.LENGTH_SHORT).show();
+                }else{
+                    showStarterRadioButtonDialog(available, finalAStartingCorpTileArray, tile);
+
+                }
+
+                break;
+
+            case "appending":
+
+                //here we're appending tiles to an existing corporation
+                results.remove(0);
+                String corp = results.get(0);
+                results.remove(0);
+
+
+                List<String> finalAddingCorpTileArray = new ArrayList<>();
+                List<String> appendingCorpList = gameDataController.getLiveCorporations().get(corp);
+
+                for(String t : results){
+                    if(uplayedTiles.get(t) == null && appendingCorpList != null && !appendingCorpList.contains(t)){
+                        finalAddingCorpTileArray.add(t);
+                    }
+                }
+                finalAddingCorpTileArray.add(tile);
+
+                //results should now just be the tiles to add to the existing corporation
+                gameDataController.addTilesToCorpAndPlay(corp,finalAddingCorpTileArray, currentPlayer, tile);
+
+                break;
+
+            default:
+
+                //default is a merger
+                //if equal sizes, show user prompt, if not, auto put one under/into the other
+
+                Map<String, Long> sizesMap = new HashMap<>();
+
+
+
+                for(String s : results){
+                    sizesMap.put(s, (long) gameDataController.getLiveCorporations().get(s).size());
+                }
+
+                //check to make sure the tile is playable
+                int safeCount = 0;
+                for(long l : sizesMap.values()){
+                    if(l > 9){
+                        if(++safeCount > 1){
+                            String s = tile + " is Unplayable";
+                            Toast.makeText(BasicGameActivity.this, s, Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                    }
+                }
+
+                String biggestName = "";
+                long largest = 0;
+                List<String> equal = new ArrayList<>();
+                //here we need to either get the largest corporation
+
+                for(String s : sizesMap.keySet()){
+
+                    long count = sizesMap.get(s);
+                    if(count > largest){
+                        biggestName = s;
+                        largest = count;
+                    }else if(count == largest){
+                        if (!equal.contains(biggestName)){
+                            equal.add(biggestName);
+                        }
+                        equal.add(s);
+                    }
+                }
+
+
+
+                List<String> finalMergeTileArray = new ArrayList<>();
+
+                for(String s : gameDataController.getAdjacentTileArray(tile)){
+                    if(!uplayedTiles.containsKey(s)){
+                        finalMergeTileArray.add(s);
+                    }
+                }
+                finalMergeTileArray.add(tile);
+
+
+
+
+                if(equal.size() > 1){
+                    //show the prompt
+                    showMergerRadioButtonDialog(equal, finalMergeTileArray, tile);
+
+                }else{
+                    //perform auto merge
+
+                    gameDataController.mergeCorporations(biggestName, results, finalMergeTileArray, tile, currentPlayer);
+                }
+
+
+
+
+                break;
+        }
+    }
+
+    private void showStarterRadioButtonDialog(final List<String> corps, final List<String> startTiles, final String playingTile) {
+
+        final String[] corp = {""};
+        AlertDialog.Builder builder = new AlertDialog.Builder(BasicGameActivity.this);
+        builder.setTitle("Choose a start corporation");
+
+
+        String[] corpArr = new String[corps.size()];
+        corpArr = corps.toArray(corpArr);
+
+
+        builder.setSingleChoiceItems(corpArr, -1, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int item) {
+                corp[0] = corps.get(item);
+                Toast.makeText(getApplicationContext(), corps.get(item), Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        builder.setPositiveButton("Start",
+                new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int id) {
+
+                        String starting = corp[0];
+                        if(starting.equals("")){
+                            Toast.makeText(BasicGameActivity.this, "Choose a starting corporation", Toast.LENGTH_SHORT).show();
+                        }else{
+
+                            gameDataController.startCorporation(starting, startTiles, currentPlayer);
+                            playTileAction(playingTile);
+
+                        }
+
+                    }
+                });
+
+        builder.setNegativeButton("Cancel",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Toast.makeText(BasicGameActivity.this, "Cancelled Merger", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        AlertDialog alert = builder.create();
+        alert.show();
 
     }
 
@@ -1604,7 +1944,51 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
 
 
+    private void showMergerRadioButtonDialog(final List<String> corps, final List<String> newTiles, final String startingTile) {
+
+        final String[] corp = {""};
+        AlertDialog.Builder builder = new AlertDialog.Builder(BasicGameActivity.this);
+        builder.setTitle("Select WINNING Corporation");
+
+        String[] corpArr = new String[corps.size()];
+        corpArr = corps.toArray(corpArr);
+
+        builder.setSingleChoiceItems(corpArr, -1, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int item) {
+                corp[0] = corps.get(item);
+                Toast.makeText(getApplicationContext(), corps.get(item), Toast.LENGTH_SHORT).show();
+            }
+        });
 
 
+        builder.setPositiveButton("Merge",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                        String winner = corp[0];
+
+                        if(corp.equals("")){
+                            Toast.makeText(BasicGameActivity.this, "Choose a corporation", Toast.LENGTH_SHORT).show();
+
+
+                        }else{
+                            //perform merge here
+                            gameDataController.mergeCorporations(winner, corps, newTiles, startingTile, currentPlayer);
+
+                        }
+
+                    }
+                });
+
+        builder.setNegativeButton("Cancel",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+//                        Toast.makeText(BasicGameActivity.this, "Fail", Toast.LENGTH_SHORT).show();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+
+    }
 
 }

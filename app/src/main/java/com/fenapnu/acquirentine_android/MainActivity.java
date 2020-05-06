@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -60,7 +61,16 @@ public class MainActivity extends AppCompatActivity implements OnGameClickListen
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        int currentOrientation = getResources().getConfiguration().orientation;
+        if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
+            // Landscape
+            setContentView(R.layout.activity_main_landscape);
+        }
+        else {
+            // Portrait
+            setContentView(R.layout.activity_main);
+        }
+
 
 
         createGame = findViewById(R.id.create_game);
@@ -222,6 +232,11 @@ public class MainActivity extends AppCompatActivity implements OnGameClickListen
                     }
 
                     User u = task.getResult().toObject(User.class);
+
+                    if(u == null){
+                       return;
+                    }
+
                     currentUser = u;
 
                     nameET.setText(u.getName());

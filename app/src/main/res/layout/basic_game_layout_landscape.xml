@@ -46,9 +46,10 @@
     </LinearLayout>
 
     <include layout="@layout/board_layout"
-        android:layout_below="@id/title_layout"
-        android:layout_above="@+id/tile_played_layout"
+        android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
+        android:layout_marginEnd="50dp"
+        android:layout_marginTop="30dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
@@ -73,11 +74,10 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/players_rv"
         android:layout_above="@+id/tile_played_layout"
-        android:paddingTop="15dp"
-        android:paddingBottom="15dp"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
         android:clipToPadding="false"
         android:elevation="9dp"
-        android:layout_marginBottom="25dp"
         android:background="@drawable/barely_rounded_lightgrey_rectangle"
         android:layout_width="175dp"
         android:layout_height="wrap_content"
@@ -115,26 +115,32 @@
     </LinearLayout>
 
 
-
-
     <LinearLayout
         android:id="@+id/cards_layout"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="0dp"
         android:elevation="10dp"
-        android:layout_marginBottom="10dp"
+        android:layout_marginBottom="0dp"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_width="wrap_content"
         android:background="@color/lightGray"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:layout_height="wrap_content">
 
         <LinearLayout
             android:layout_margin="5dp"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:layout_width="wrap_content"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:layout_weight="1">
+
+            <Button
+                android:layout_width="40dp"
+                android:layout_height="60dp"
+                android:gravity="top"
+                android:id="@+id/spark_button"
+                android:background="@drawable/spark_card"/>
 
             <LinearLayout
                 android:layout_gravity="center_vertical"
@@ -163,22 +169,24 @@
 
             </LinearLayout>
 
-            <Button
-                android:layout_width="40dp"
-                android:layout_height="60dp"
-                android:gravity="end"
-                android:id="@+id/spark_button"
-                android:background="@drawable/spark_card"/>
+
 
         </LinearLayout>
 
         <LinearLayout
             android:layout_margin="5dp"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:layout_width="wrap_content"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:layout_weight="1">
+
+            <Button
+                android:layout_width="40dp"
+                android:layout_height="60dp"
+                android:gravity="bottom"
+                android:id="@+id/nestor_button"
+                android:background="@drawable/nestor_card"/>
 
             <LinearLayout
                 android:layout_gravity="center_vertical"
@@ -207,12 +215,7 @@
 
             </LinearLayout>
 
-            <Button
-                android:layout_width="40dp"
-                android:layout_height="60dp"
-                android:gravity="end"
-                android:id="@+id/nestor_button"
-                android:background="@drawable/nestor_card"/>
+
 
 
 
@@ -220,12 +223,18 @@
 
         <LinearLayout
             android:layout_margin="5dp"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:layout_width="wrap_content"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:layout_weight="1">
 
+            <Button
+                android:layout_width="40dp"
+                android:layout_height="60dp"
+                android:gravity="bottom"
+                android:id="@+id/etch_button"
+                android:background="@drawable/etch_card"/>
 
             <LinearLayout
                 android:layout_gravity="center_vertical"
@@ -254,23 +263,23 @@
 
             </LinearLayout>
 
-            <Button
-                android:layout_width="40dp"
-                android:layout_height="60dp"
-                android:id="@+id/etch_button"
-                android:background="@drawable/etch_card"/>
 
 
         </LinearLayout>
 
         <LinearLayout
             android:layout_margin="5dp"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:layout_width="wrap_content"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:layout_weight="1">
-
+            <Button
+                android:layout_width="40dp"
+                android:layout_height="60dp"
+                android:id="@+id/rove_button"
+                android:gravity="bottom"
+                android:background="@drawable/rove_card"/>
             <LinearLayout
                 android:layout_gravity="center_vertical"
                 android:orientation="vertical"
@@ -297,23 +306,25 @@
                     android:layout_weight="1"/>
 
             </LinearLayout>
-            <Button
-                android:layout_width="40dp"
-                android:layout_height="60dp"
-                android:id="@+id/rove_button"
-                android:background="@drawable/rove_card"/>
+
 
 
         </LinearLayout>
 
         <LinearLayout
             android:layout_margin="5dp"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:layout_width="wrap_content"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:layout_weight="1">
 
+            <Button
+                android:layout_width="40dp"
+                android:layout_height="60dp"
+                android:id="@+id/fleet_button"
+                android:gravity="top"
+                android:background="@drawable/fleet_card"/>
 
             <LinearLayout
                 android:layout_gravity="center_vertical"
@@ -342,23 +353,22 @@
 
             </LinearLayout>
 
-            <Button
-                android:layout_width="40dp"
-                android:layout_height="60dp"
-                android:id="@+id/fleet_button"
-                android:background="@drawable/fleet_card"/>
-
 
         </LinearLayout>
 
         <LinearLayout
             android:layout_margin="5dp"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:layout_width="wrap_content"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:layout_weight="1">
 
+            <Button
+                android:layout_width="40dp"
+                android:layout_height="60dp"
+                android:id="@+id/echo_button"
+                android:background="@drawable/echo_card"/>
             <LinearLayout
                 android:layout_gravity="center_vertical"
                 android:orientation="vertical"
@@ -386,22 +396,22 @@
 
             </LinearLayout>
 
-            <Button
-                android:layout_width="40dp"
-                android:layout_height="60dp"
-                android:id="@+id/echo_button"
-                android:background="@drawable/echo_card"/>
 
         </LinearLayout>
 
         <LinearLayout
             android:layout_margin="5dp"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:layout_width="wrap_content"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:layout_weight="1">
 
+            <Button
+                android:layout_width="40dp"
+                android:layout_height="60dp"
+                android:id="@+id/bolt_button"
+                android:background="@drawable/bolt_card"/>
 
             <LinearLayout
                 android:layout_gravity="center_vertical"
@@ -430,11 +440,7 @@
 
             </LinearLayout>
 
-            <Button
-                android:layout_width="40dp"
-                android:layout_height="60dp"
-                android:id="@+id/bolt_button"
-                android:background="@drawable/bolt_card"/>
+
 
         </LinearLayout>
 
@@ -445,7 +451,7 @@
         android:id="@+id/toggle_cards_btn"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_marginBottom="70dp"
+        android:layout_marginBottom="50dp"
         android:layout_marginEnd="-5dp"
         android:elevation="9dp"
         android:scaleType="fitCenter"
@@ -467,16 +473,15 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_alignStart="@+id/grid_layout"
-        android:layout_alignEnd="@+id/grid_layout"
         android:visibility="invisible"
         android:layout_below="@+id/grid_layout">
 
         <Button
             android:id="@+id/play_tile_btn"
-            android:layout_width="0dp"
-            android:layout_weight="1"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Play Tile"
+            android:padding="3dp"
             android:layout_marginEnd="5dp"
             android:textColor="@color/reverseInGameColor"
             android:textAllCaps="false"
@@ -485,24 +490,22 @@
 
         <Button
             android:id="@+id/discard_tile_btn"
-            android:layout_width="0dp"
-            android:layout_weight="1"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/deleteColor"
-            android:layout_marginStart="5dp"
             android:layout_marginEnd="5dp"
-            android:text="Discard Tile"
+            android:padding="3dp"
+            android:text="Discard"
             android:textAllCaps="false"
             style="@style/Widget.AppCompat.Button.Borderless"
             />
 
         <Button
             android:id="@+id/close_tiles_btn"
-            android:layout_width="0dp"
-            android:layout_weight="1"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/textColor"
-            android:layout_marginStart="10dp"
+            android:padding="3dp"
             android:text="Close"
             android:textAllCaps="false"
             style="@style/Widget.AppCompat.Button.Borderless"
@@ -532,7 +535,7 @@
 
     <GridLayout
         android:id="@+id/grid_layout"
-        android:layout_above="@+id/draw_tile_btn"
+        android:layout_above="@+id/start_game_btn"
         android:layout_width="wrap_content"
         android:orientation="horizontal"
         android:layout_alignParentStart="true"
@@ -545,8 +548,8 @@
         <Button
             android:id="@+id/tile1_btn"
             android:layout_margin="5dp"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:textColor="@color/textColor"
             style="@style/Widget.AppCompat.Button.Borderless"
             android:background="@drawable/barely_rounded_white_rectangle_bordered"
@@ -555,8 +558,8 @@
         <Button
             android:id="@+id/tile2_btn"
             android:layout_margin="5dp"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:textColor="@color/textColor"
             style="@style/Widget.AppCompat.Button.Borderless"
             android:background="@drawable/barely_rounded_white_rectangle_bordered"
@@ -565,8 +568,8 @@
         <Button
             android:id="@+id/tile3_btn"
             android:layout_margin="5dp"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:textColor="@color/textColor"
             style="@style/Widget.AppCompat.Button.Borderless"
             android:background="@drawable/barely_rounded_white_rectangle_bordered"
@@ -577,8 +580,8 @@
         <Button
             android:id="@+id/tile4_btn"
             android:layout_margin="5dp"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:textColor="@color/textColor"
             android:background="@drawable/barely_rounded_white_rectangle_bordered"
             style="@style/Widget.AppCompat.Button.Borderless"
@@ -586,8 +589,8 @@
         <Button
             android:id="@+id/tile5_btn"
             android:layout_margin="5dp"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:textColor="@color/textColor"
             android:background="@drawable/barely_rounded_white_rectangle_bordered"
             style="@style/Widget.AppCompat.Button.Borderless"
@@ -595,8 +598,8 @@
         <Button
             android:id="@+id/tile6_btn"
             android:layout_margin="5dp"
-            android:layout_width="75dp"
-            android:layout_height="75dp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:textColor="@color/textColor"
             android:background="@drawable/barely_rounded_white_rectangle_bordered"
             style="@style/Widget.AppCompat.Button.Borderless"
@@ -606,40 +609,42 @@
     </GridLayout>
 
 
-    <Button
-        android:id="@+id/draw_tile_btn"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        android:layout_marginBottom="20dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/placeholderColor"
-        android:text="Draw Tile"
-        android:visibility="invisible"
-        android:textAllCaps="false"
-        style="@style/Widget.AppCompat.Button.Borderless"/>
-
+<!--    <Button-->
+<!--        android:id="@+id/draw_tile_btn"-->
+<!--        android:layout_alignParentBottom="true"-->
+<!--        android:layout_centerHorizontal="true"-->
+<!--        android:layout_centerVertical="true"-->
+<!--        android:layout_marginBottom="20dp"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:textColor="@color/placeholderColor"-->
+<!--        android:text="Draw Tile"-->
+<!--        android:visibility="invisible"-->
+<!--        android:textAllCaps="false"-->
+<!--        style="@style/Widget.AppCompat.Button.Borderless"/>-->
 
 
     <include
-        layout="@layout/fragment_options"
         android:id="@+id/buysell_view"
-        android:visibility="invisible"
+        layout="@layout/fragment_options_landscape"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
-        android:layout_marginEnd="0dp"
-        android:layout_marginBottom="0dp" />
-
+        android:layout_marginTop="-20dp"
+        android:layout_marginEnd="-2dp"
+        android:layout_marginBottom="-29dp"
+        android:visibility="invisible" />
 
     <Button
         android:id="@+id/start_game_btn"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
         android:layout_alignParentBottom="true"
         android:textColor="@color/colorAccent"
+        android:layout_alignParentStart="true"
         android:layout_margin="10dp"
         android:elevation="7dp"
         android:textAllCaps="false"

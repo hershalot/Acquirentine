@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:elevation="16dp"
+    android:layout_height="match_parent">
+
+
+    <RelativeLayout
+        android:id="@+id/alpha_view"
+        android:background="@color/darkGray"
+        android:alpha="0.9"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+
+
+    <LinearLayout
+
+        android:layout_marginEnd="10dp"
+        android:padding="5dp"
+        android:background="@drawable/rounded_background_rectangle_bordered"
+        android:layout_width="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="30dp"
+        android:layout_marginBottom="30dp"
+        android:layout_toStartOf="@+id/sell_layout"
+
+        android:id="@+id/trade_layout"
+        android:layout_centerVertical="true"
+        android:layout_height="wrap_content">
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <TextView
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:textSize="22sp"
+                android:text="Trade "
+                />
+
+            <TextView
+                android:id="@+id/trade_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="22sp"
+                />
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="center"
+            android:layout_margin="5dp"
+            >
+
+            <EditText
+                android:id="@+id/trade_et"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:inputType="number"
+                android:layout_gravity="center_horizontal"
+                android:hint="0"
+                />
+
+            <TextView
+                android:id="@+id/trade_for_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text= "For "
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="15dp"
+                />
+
+
+            <Spinner
+                android:id="@+id/trade_spinner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+
+                />
+
+        </LinearLayout>
+
+
+        <Button
+            android:id="@+id/trade_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAllCaps="false"
+            android:layout_gravity="end"
+            android:text="Trade"
+            android:textStyle="bold"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:textColor="@color/boltColor"
+            />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="30dp"
+        android:layout_marginTop="30dp"
+        android:layout_marginBottom="30dp"
+        android:padding="5dp"
+        android:layout_width="wrap_content"
+        android:orientation="vertical"
+        android:id="@+id/buy_layout"
+
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:background="@drawable/rounded_background_rectangle_bordered"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+
+            <TextView
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="22sp"
+                android:layout_marginEnd="10dp"
+                android:text=" Buy "
+                />
+
+            <TextView
+                android:id="@+id/buy_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="22sp"
+                />
+
+        </LinearLayout>
+
+
+
+        <EditText
+            android:id="@+id/buy_et"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+
+            android:layout_gravity="center_horizontal"
+            android:inputType="number"
+            android:hint="0"
+            />
+
+        <Button
+            android:id="@+id/buy_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAllCaps="false"
+            android:layout_gravity="end"
+            android:text="Buy"
+            android:textStyle="bold"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:textColor="@color/etchColor"
+            />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:padding="5dp"
+        android:layout_width="wrap_content"
+        android:orientation="vertical"
+        android:id="@+id/sell_layout"
+        android:layout_centerVertical="true"
+        android:layout_marginTop="30dp"
+        android:layout_marginBottom="30dp"
+        android:background="@drawable/rounded_background_rectangle_bordered"
+        android:layout_toStartOf="@+id/buy_layout"
+        android:layout_height="wrap_content">
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <TextView
+
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="22sp"
+                android:layout_marginEnd="10dp"
+                android:text=" Sell "
+                />
+
+            <TextView
+                android:id="@+id/sell_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="22sp"
+                />
+
+        </LinearLayout>
+
+
+
+        <EditText
+            android:id="@+id/sell_et"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:inputType="number"
+            android:layout_gravity="center_horizontal"
+            android:hint="0"
+            />
+
+        <Button
+            android:id="@+id/sell_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAllCaps="false"
+            android:layout_gravity="end"
+            android:text="Sell"
+            android:textStyle="bold"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:textColor="@color/sparkColor"
+            />
+    </LinearLayout>
+
+
+
+    <Button
+        android:id="@+id/close_popup"
+        android:layout_marginTop="15dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/textColor"
+        android:layout_below="@+id/buy_layout"
+        android:layout_alignEnd="@+id/buy_layout"
+        android:background="@drawable/rounded_white_rectangle_bordered"
+        android:text="Close"
+        android:textAllCaps="false"
+
+        />
+
+
+
+
+
+</RelativeLayout>

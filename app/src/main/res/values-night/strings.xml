@@ -1,11 +1,11 @@
 <resources>
 
-    <string name="app_name">Acquirentine</string>
+    <string name="app_name">Acquarentine</string>
     <string name="shared_preferences_key">shared_preferences_key</string>
     <string name="shared_preferences_user_id">shared_preferences_user_id</string>
 
     <string-array name="corporations_array">
-        <item>Select Corporation</item>
+        <item>Selec</item>
         <item>Spark</item>
         <item>Nestor</item>
         <item>Rove</item>

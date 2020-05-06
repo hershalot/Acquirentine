@@ -10,7 +10,7 @@ import java.util.Map;
 public class Player {
 
 
-    double money;
+    long money;
     Map<String, Long> cards;
     String userId;
     String startTile;
@@ -25,12 +25,13 @@ public class Player {
 
 
 
+
     public Player(Map<String, Object> data){
 
 
 
         if(data.get("money") != null){
-            money = (double) data.get("money");
+            money = (long) data.get("money");
         }else{
             money = 0;
         }
@@ -81,7 +82,7 @@ public class Player {
         this.tiles = Arrays.asList("", "", "", "", "" , "");
         this.turnOrder = 0;
         this.userId = userId;
-        this.money = 0;
+        this.money = 6000;
         this.cards = new HashMap<>();
         this.cards.put(Corporation.SPARK.label, (long) 0);
         this.cards.put(Corporation.NESTOR.label, (long) 0);
@@ -103,7 +104,7 @@ public class Player {
 
         tiles = Arrays.asList("", "", "", "", "" , "");
         userId = "";
-        money = 0;
+        money = 6000;
         cards = new HashMap<>();
         cards.put(Corporation.SPARK.label, (long)0);
         cards.put(Corporation.NESTOR.label, (long)0);
@@ -130,7 +131,7 @@ public class Player {
         return name;
     }
 
-    public double getMoney() {
+    public long getMoney() {
         return money;
     }
 
@@ -167,7 +168,7 @@ public class Player {
         isGoing = going;
     }
 
-    public void setMoney(double money) {
+    public void setMoney(long money) {
         this.money = money;
     }
 
@@ -228,7 +229,7 @@ public class Player {
 
 
     //adds money to your hand
-    public void addMoney(Double amount){
+    public void addMoney(long amount){
         money = money + amount;
     }
 
@@ -236,7 +237,7 @@ public class Player {
 
 
     //removes money from your hand -> returns false if it's unaffordable
-    public boolean removeMoney(Double amount){
+    public boolean removeMoney(long amount){
 
         boolean canRemove = false;
         if(money - amount > 0){

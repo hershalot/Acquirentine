@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:textColor="@color/textColor"
-        android:textSize="20sp"
+        android:textSize="17sp"
         android:maxLines="1"
 
         android:layout_marginStart="5dp"
@@ -24,7 +24,7 @@
     <Button
         android:id="@+id/start_tile"
         android:layout_marginStart="15dp"
-        android:layout_margin="10dp"
+        android:layout_margin="5dp"
         android:padding="1dp"
         android:textSize="12sp"
         android:layout_width="25dp"
