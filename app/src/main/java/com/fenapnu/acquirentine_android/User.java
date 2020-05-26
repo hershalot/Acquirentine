@@ -6,10 +6,11 @@ import java.util.Map;
 public class User {
 
 
-    String userId;
+    String uid;
     boolean inGame;
     String gameId;
     String name;
+    String email;
 
 
 
@@ -21,8 +22,13 @@ public class User {
         return name;
     }
 
-    public String getUserId() {
-        return userId;
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getUid() {
+        return uid;
     }
 
     public boolean isInGame() {
@@ -30,6 +36,13 @@ public class User {
     }
 
 
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
 
     public void setGameId(String gameId) {
         this.gameId = gameId;
@@ -43,14 +56,12 @@ public class User {
         this.name = name;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
+
 
 
     public Map<String, Object> toDictionary(){
         Map<String, Object> newDict = new HashMap<>();
-        newDict.put("userId", this.userId);
+        newDict.put("uid", this.uid);
         newDict.put("inGame", this.inGame);
         newDict.put("gameId", this.gameId);
         newDict.put("name", this.name);

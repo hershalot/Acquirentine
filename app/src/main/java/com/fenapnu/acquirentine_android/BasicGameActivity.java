@@ -9,8 +9,10 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridLayout;
@@ -37,14 +39,27 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static android.view.View.GONE;
 
-public class BasicGameActivity extends AppCompatActivity implements OnPlayerClickListener{
+
+interface OnTileActionListener{
+
+    void onTileDrawn(String tile, int pos);
+    void onTileDiscarded(String tile, int pos);
+
+
+}
+
+
+
+public class BasicGameActivity extends AppCompatActivity implements OnPlayerClickListener, OnTileActionListener{
 
 
     TextView a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10,
@@ -56,17 +71,29 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
     List<TextView> boardPlaceList = new ArrayList<>();
 
 
+
+    List<Boolean> flippedTiles = new ArrayList<>();
+
     //CARD OPTIONs
     Button buyButton;
     Button sellButton;
     Button tradeButton;
     Button closePopup;
+
+    Button increaseSellBtn;
+    Button decreaseSellBtn;
+    Button increaseBuyBtn;
+    Button decreaseBuyBtn;
+    Button increaseTradeBtn;
+    Button decreaseTradeBtn;
+    Button endTurnButton;
+
     Button endGame;
     ImageButton toggleTileGrid;
     GridLayout tileLayout;
 
     ImageButton togglePlayersBtn;
-
+    TextView playerMoneyTV;
 
     TextView buyLbl;
     TextView sellLbl;
@@ -130,7 +157,7 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
     TextView gameNameTV;
     RecyclerView recyclerView;
     PlayersItemAdapter adapter;
-
+    Button endGameWithPayouts;
 
     boolean drawerIsOpen = true;
     boolean gridIsOpen = true;
@@ -154,13 +181,17 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
     List<Player> playerList = new ArrayList<>();
 
     String selectedTile = "";
+    int selectedButtonIndex = -1;
     String selectedCorporation = "";
 
+    TextView costPerEt;
 
 
     @Override
     protected void onSaveInstanceState(Bundle state) {
         super.onSaveInstanceState(state);
+
+        gameDataController.mListener = null;
         String json = DataManager.serializeGameData(gameDataController);
 
         state.putSerializable("gameData", json);
@@ -172,7 +203,7 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         int currentOrientation = getResources().getConfiguration().orientation;
         if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
             // Landscape
@@ -184,10 +215,10 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
         }
 
 
-
+        endTurnButton = findViewById(R.id.end_turn_button);
         recyclerView = findViewById(R.id.players_rv);
         cardsLayout = findViewById(R.id.cards_layout);
-
+        endGameWithPayouts = findViewById(R.id.end_game_payout);
 
         tileBtn1 = findViewById(R.id.tile1_btn);
         tileBtn2 = findViewById(R.id.tile2_btn);
@@ -196,12 +227,28 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
         tileBtn5 = findViewById(R.id.tile5_btn);
         tileBtn6 = findViewById(R.id.tile6_btn);
 
+        buyEt = findViewById(R.id.buy_et);
+        sellEt = findViewById(R.id.sell_et);
+        tradeForLbl = findViewById(R.id.trade_for_tv);
+        tradeEt = findViewById(R.id.trade_et);
+
+        buyEt.setEnabled(false);
+        sellEt.setEnabled(false);
+        tradeEt.setEnabled(false);
+
+        endTurnButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                gameDataController.endTurn();
+            }
+        });
+
         lastPlayedTileLbl = findViewById(R.id.last_tile_played);
         closeTiles = findViewById(R.id.close_tiles_btn);
         closeTiles.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                resetButtonBackgrounds();
+                resetButtonColors();
                 selectedTile = "";
                 tileButtonsLayout.setVisibility(View.INVISIBLE);
             }
@@ -362,13 +409,16 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
         boltRemaining = findViewById(R.id.bolt_remaining);
         echoRemaining = findViewById(R.id.echo_remaining);
 
+
+        playerMoneyTV = findViewById(R.id.player_money_tv);
         playTile = findViewById(R.id.play_tile_btn);
         playTile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 determinePlayTileAction();
-                resetButtonBackgrounds();
+                resetButtonColors();
                 selectedTile = "";
+                hideTileActionsView();
             }
         });
 
@@ -377,8 +427,9 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
             @Override
             public void onClick(View v) {
                 unplayableTileAction();
-                resetButtonBackgrounds();
+                resetButtonColors();
                 selectedTile = "";
+                hideTileActionsView();
             }
         });
         tileButtonsLayout = findViewById(R.id.tile_button_layout);
@@ -389,23 +440,31 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
             @Override
             public void onClick(View v) {
 
-                if(gameDataController != null && !gameDataController.isGameStarted()){
+                if((gameDataController != null && !gameDataController.isGameStarted()) || flippedTiles.get(0)){
                     return;
                 }
 
-                if(tileBtn1.getText().equals("Draw") && gameDataController.getTiles().size() > 0){
-                    drawTileAction();
+                selectedButtonIndex = 0;
+
+                if(tileBtnArray.get(0).getText().equals("DRAW") && gameDataController.getTiles().size() > 0){
+                    tileBtnArray.get(0).setEnabled(false);
+                    shrinkTileAnimation(tileBtnArray.get(0));
+                    drawTileAction(0);
                     return;
-                }else if(tileBtn1.getText().equals("Draw") && gameDataController.getTiles().size() < 1){
+                }else if(tileBtnArray.get(0).getText().equals("DRAW") && gameDataController.getTiles().size() < 1){
                     Toast.makeText(BasicGameActivity.this, "No Tiles Remain", Toast.LENGTH_SHORT).show();
-                    tileBtn1.setVisibility(View.INVISIBLE);
+                    tileBtnArray.get(0).setVisibility(View.INVISIBLE);
                     return;
                 }
-                selectedTile = tileBtn1.getText().toString();
 
-                resetButtonBackgrounds();
-                tileBtn1.setBackground(getDrawable(R.drawable.rounded_green_rectangle_bordered));
-                showTileActionsView();
+                if(tileBtnArray.get(0).getText().equals(selectedTile) && !selectedTile.equals("")){
+                    selectedTile = "";
+                    hideTileActionsView();
+                }else{
+                    selectedTile = tileBtnArray.get(0).getText().toString();
+                    showTileActionsView();
+                }
+                resetButtonColors();
             }
         });
 
@@ -414,93 +473,124 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
             @Override
             public void onClick(View v) {
 
-                if(gameDataController != null && !gameDataController.isGameStarted()){
+
+                selectedButtonIndex = 1;
+                if((gameDataController != null && !gameDataController.isGameStarted()) || flippedTiles.get(1)){
                     return;
                 }
 
-                if(tileBtn2.getText().equals("Draw") && gameDataController.getTiles().size() > 0){
-                    drawTileAction();
+                if(tileBtnArray.get(1).getText().equals("DRAW") && gameDataController.getTiles().size() > 0){
+                    tileBtnArray.get(1).setEnabled(false);
+                    shrinkTileAnimation(tileBtnArray.get(1));
+                    drawTileAction(1);
                     return;
-                }else if(tileBtn2.getText().equals("Draw") && gameDataController.getTiles().size() < 1){
+                }else if(tileBtnArray.get(1).getText().equals("DRAW") && gameDataController.getTiles().size() < 1){
                     Toast.makeText(BasicGameActivity.this, "No Tiles Remain", Toast.LENGTH_SHORT).show();
-                    tileBtn2.setVisibility(View.INVISIBLE);
+                    tileBtnArray.get(1).setVisibility(View.INVISIBLE);
                     return;
                 }
-                selectedTile = tileBtn2.getText().toString();
 
-                resetButtonBackgrounds();
-                tileBtn2.setBackground(getDrawable(R.drawable.rounded_green_rectangle_bordered));
-                showTileActionsView();
+
+                if(tileBtnArray.get(1).getText().equals(selectedTile)){
+                    selectedTile = "";
+                    hideTileActionsView();
+                }else{
+                    selectedTile = tileBtnArray.get(1).getText().toString();
+                    showTileActionsView();
+                }
+                resetButtonColors();
             }
         });
+
 
 
         tileBtn3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(gameDataController != null && !gameDataController.isGameStarted()){
+
+                if((gameDataController != null && !gameDataController.isGameStarted()) || flippedTiles.get(2)){
                     return;
                 }
 
-                if(tileBtn3.getText().equals("Draw") && gameDataController.getTiles().size() > 0){
-                    drawTileAction();
+                selectedButtonIndex = 2;
+                if(tileBtnArray.get(2).getText().equals("DRAW") && gameDataController.getTiles().size() > 0){
+                    tileBtnArray.get(2).setEnabled(false);
+                    shrinkTileAnimation(tileBtnArray.get(2));
+                    drawTileAction(2);
                     return;
-                }else if(tileBtn3.getText().equals("Draw") && gameDataController.getTiles().size() < 1){
+                }else if(tileBtnArray.get(2).getText().equals("DRAW") && gameDataController.getTiles().size() < 1){
                     Toast.makeText(BasicGameActivity.this, "No Tiles Remain", Toast.LENGTH_SHORT).show();
-                    tileBtn3.setVisibility(View.INVISIBLE);
+                    tileBtnArray.get(2).setVisibility(View.INVISIBLE);
                     return;
                 }
-                selectedTile = tileBtn3.getText().toString();
-
-                resetButtonBackgrounds();
-                tileBtn3.setBackground(getDrawable(R.drawable.rounded_green_rectangle_bordered));
-                showTileActionsView();
+                if(tileBtnArray.get(2).getText().equals(selectedTile)){
+                    selectedTile = "";
+                    hideTileActionsView();
+                }else{
+                    selectedTile = tileBtnArray.get(2).getText().toString();
+                    showTileActionsView();
+                }
+                resetButtonColors();
             }
         });
 
         tileBtn4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(gameDataController != null && !gameDataController.isGameStarted()){
+
+                if((gameDataController != null && !gameDataController.isGameStarted()) || flippedTiles.get(3)){
                     return;
                 }
+                selectedButtonIndex = 3;
 
-                if(tileBtn4.getText().equals("Draw") && gameDataController.getTiles().size() > 0){
-                    drawTileAction();
+                if(tileBtnArray.get(3).getText().equals("DRAW") && gameDataController.getTiles().size() > 0){
+                    tileBtnArray.get(3).setEnabled(false);
+                    shrinkTileAnimation(tileBtnArray.get(3));
+                    drawTileAction(3);
                     return;
-                }else if(tileBtn4.getText().equals("Draw") && gameDataController.getTiles().size() < 1){
+                }else if(tileBtnArray.get(3).getText().equals("DRAW") && gameDataController.getTiles().size() < 1){
                     Toast.makeText(BasicGameActivity.this, "No Tiles Remain", Toast.LENGTH_SHORT).show();
-                    tileBtn4.setVisibility(View.INVISIBLE);
+                    tileBtnArray.get(3).setVisibility(View.INVISIBLE);
                     return;
                 }
-                selectedTile = tileBtn4.getText().toString();
+                if(tileBtnArray.get(3).getText().equals(selectedTile)){
+                    selectedTile = "";
+                    hideTileActionsView();
+                }else{
+                    selectedTile = tileBtnArray.get(3).getText().toString();
+                    showTileActionsView();
+                }
+                resetButtonColors();
 
-                resetButtonBackgrounds();
-                tileBtn4.setBackground(getDrawable(R.drawable.rounded_green_rectangle_bordered));
-                showTileActionsView();
             }
         });
 
         tileBtn5.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(gameDataController != null && !gameDataController.isGameStarted()){
+                if((gameDataController != null && !gameDataController.isGameStarted()) || flippedTiles.get(4)){
                     return;
                 }
-
-                if(tileBtn5.getText().equals("Draw") && gameDataController.getTiles().size() > 0){
-                    drawTileAction();
+                selectedButtonIndex = 4;
+                if(tileBtnArray.get(4).getText().equals("DRAW") && gameDataController.getTiles().size() > 0){
+                    tileBtnArray.get(4).setEnabled(false);
+                    shrinkTileAnimation(tileBtnArray.get(4));
+                    drawTileAction(4);
                     return;
-                }else if(tileBtn5.getText().equals("Draw") && gameDataController.getTiles().size() < 1){
+                }else if(tileBtnArray.get(4).getText().equals("DRAW") && gameDataController.getTiles().size() < 1){
                     Toast.makeText(BasicGameActivity.this, "No Tiles Remain", Toast.LENGTH_SHORT).show();
-                    tileBtn5.setVisibility(View.INVISIBLE);
+                    tileBtnArray.get(4).setVisibility(View.INVISIBLE);
                     return;
                 }
-                selectedTile = tileBtn5.getText().toString();
+                if(tileBtnArray.get(4).getText().equals(selectedTile)){
+                    selectedTile = "";
+                    hideTileActionsView();
+                }else{
+                    selectedTile = tileBtnArray.get(4).getText().toString();
+                    showTileActionsView();
+                }
+                resetButtonColors();
 
-                resetButtonBackgrounds();
-                tileBtn5.setBackground(getDrawable(R.drawable.rounded_green_rectangle_bordered));
-                showTileActionsView();
             }
         });
 
@@ -509,65 +599,206 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
             @Override
             public void onClick(View v) {
 
-                if(gameDataController != null && !gameDataController.isGameStarted()){
+                if((gameDataController != null && !gameDataController.isGameStarted()) || flippedTiles.get(5)){
                     return;
                 }
+                selectedButtonIndex = 5;
 
-
-                if(tileBtn6.getText().equals("Draw") && gameDataController.getTiles().size() > 0){
-                    drawTileAction();
+                if(tileBtnArray.get(5).getText().equals("DRAW") && gameDataController.getTiles().size() > 0){
+                    tileBtnArray.get(5).setEnabled(false);
+                    shrinkTileAnimation(tileBtnArray.get(5));
+                    drawTileAction(5);
                     return;
-                }else if(tileBtn6.getText().equals("Draw") && gameDataController.getTiles().size() < 1){
+                }else if(tileBtnArray.get(5).getText().equals("DRAW") && gameDataController.getTiles().size() < 1){
                     Toast.makeText(BasicGameActivity.this, "No Tiles Remain", Toast.LENGTH_SHORT).show();
-                    tileBtn6.setVisibility(View.INVISIBLE);
+                    tileBtnArray.get(5).setVisibility(View.INVISIBLE);
                     return;
                 }
+                if(tileBtnArray.get(5).getText().equals(selectedTile)){
+                    selectedTile = "";
+                    hideTileActionsView();
+                }else{
+                    selectedTile = tileBtnArray.get(5).getText().toString();
+                    showTileActionsView();
+                }
+                resetButtonColors();
 
-                selectedTile = tileBtn6.getText().toString();
-                resetButtonBackgrounds();
-                tileBtn6.setBackground(getDrawable(R.drawable.rounded_green_rectangle_bordered));
-                showTileActionsView();
+
             }
         });
 
-
-
+        endGameWithPayouts.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                gameDataController.performFinalPayouts();
+            }
+        });
 
 
         tileBtn1.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                return false;
+
+                if(tileBtnArray.get(0).getText().equals("") || tileBtnArray.get(0).getText().equals("DRAW")){
+                    return false;
+                }
+
+                if(flippedTiles.get(0)){
+                    //is's flipped, unflip it
+                    flippedTiles.set(0, false);
+                    tileBtnArray.get(0).setBackground(getDrawable(R.drawable.rounded_white_rectangle_bordered));
+                    tileBtnArray.get(0).setTextColor(getColor(R.color.textColor));
+
+                }else{
+                    //is's unflipped, flip it
+                    if(tileBtnArray.get(0).getText().equals(selectedTile)){
+                        selectedTile = "";
+                        hideTileActionsView();
+                    }
+                    flippedTiles.set(0, true);
+                    tileBtnArray.get(0).setBackground(getDrawable(R.drawable.rounded_grey_rectangle_bordered));
+                    tileBtnArray.get(0).setTextColor(getColor(R.color.darkGray));
+                }
+
+                return true;
             }
         });
         tileBtn2.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                return false;
+
+                if(tileBtnArray.get(1).getText().equals("") || tileBtnArray.get(1).getText().equals("DRAW")){
+                    return false;
+                }
+                if(flippedTiles.get(1)){
+                    //is's flipped, unflip it
+                    flippedTiles.set(1, false);
+                    tileBtnArray.get(1).setBackground(getDrawable(R.drawable.rounded_white_rectangle_bordered));
+                    tileBtnArray.get(1).setTextColor(getColor(R.color.textColor));
+
+                }else{
+                    //is's unflipped, flip it
+                    if(tileBtnArray.get(1).getText().equals(selectedTile)){
+                        selectedTile = "";
+                        hideTileActionsView();
+                    }
+                    flippedTiles.set(1, true);
+                    tileBtnArray.get(1).setBackground(getDrawable(R.drawable.rounded_grey_rectangle_bordered));
+                    tileBtnArray.get(1).setTextColor(getColor(R.color.darkGray));
+                }
+
+                return true;
             }
         });
         tileBtn3.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                return false;
+
+                if(tileBtnArray.get(2).getText().equals("") || tileBtnArray.get(2).getText().equals("Draw")){
+                    return false;
+                }
+                if(flippedTiles.get(2)){
+                    //is's flipped, unflip it
+                    flippedTiles.set(2, false);
+                    tileBtnArray.get(2).setBackground(getDrawable(R.drawable.rounded_white_rectangle_bordered));
+                    tileBtnArray.get(2).setTextColor(getColor(R.color.textColor));
+
+                }else{
+                    //is's unflipped, flip it
+                    if(tileBtnArray.get(2).getText().equals(selectedTile)){
+                        selectedTile = "";
+                        hideTileActionsView();
+                    }
+                    flippedTiles.set(2, true);
+                    tileBtnArray.get(2).setBackground(getDrawable(R.drawable.rounded_grey_rectangle_bordered));
+                    tileBtnArray.get(2).setTextColor(getColor(R.color.darkGray));
+                }
+
+                return true;
             }
         });
         tileBtn4.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                return false;
+
+                if(tileBtnArray.get(3).getText().equals("") || tileBtnArray.get(3).getText().equals("Draw")){
+                    return false;
+                }
+                if(flippedTiles.get(3)){
+                    //is's flipped, unflip it
+                    flippedTiles.set(3, false);
+                    tileBtnArray.get(3).setBackground(getDrawable(R.drawable.rounded_white_rectangle_bordered));
+                    tileBtnArray.get(3).setTextColor(getColor(R.color.textColor));
+
+                }else{
+                    //is's unflipped, flip it
+                    if(tileBtnArray.get(3).getText().equals(selectedTile)){
+                        selectedTile = "";
+                        hideTileActionsView();
+                    }
+                    flippedTiles.set(3, true);
+                    tileBtnArray.get(3).setBackground(getDrawable(R.drawable.rounded_grey_rectangle_bordered));
+                    tileBtnArray.get(3).setTextColor(getColor(R.color.darkGray));
+                }
+
+                return true;
             }
         });
         tileBtn5.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                return false;
+
+                if(tileBtnArray.get(4).getText().equals("") || tileBtnArray.get(4).getText().equals("Draw")){
+                    return false;
+                }
+                if(flippedTiles.get(4)){
+
+
+                    //is's flipped, unflip it
+                    flippedTiles.set(4, false);
+                    tileBtnArray.get(4).setBackground(getDrawable(R.drawable.rounded_white_rectangle_bordered));
+                    tileBtnArray.get(4).setTextColor(getColor(R.color.textColor));
+
+                }else{
+                    //is's unflipped, flip it
+                    if(tileBtnArray.get(4).getText().equals(selectedTile)){
+                        selectedTile = "";
+                        hideTileActionsView();
+                    }
+                    flippedTiles.set(4, true);
+                    tileBtnArray.get(4).setBackground(getDrawable(R.drawable.rounded_grey_rectangle_bordered));
+                    tileBtnArray.get(4).setTextColor(getColor(R.color.darkGray));
+                }
+
+                return true;
             }
         });
         tileBtn6.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                return false;
+
+                if(tileBtnArray.get(5).getText().equals("") || tileBtnArray.get(5).getText().equals("Draw")){
+                    return false;
+                }
+
+                if(flippedTiles.get(5)){
+                    //is's flipped, unflip it
+                    flippedTiles.set(5, false);
+                    tileBtnArray.get(5).setBackground(getDrawable(R.drawable.rounded_white_rectangle_bordered));
+                    tileBtnArray.get(5).setTextColor(getColor(R.color.textColor));
+
+                }else{
+                    //is's unflipped, flip it
+                    if(tileBtnArray.get(5).getText().equals(selectedTile)){
+                        selectedTile = "";
+                        hideTileActionsView();
+                    }
+                    flippedTiles.set(5, true);
+                    tileBtnArray.get(5).setBackground(getDrawable(R.drawable.rounded_grey_rectangle_bordered));
+                    tileBtnArray.get(5).setTextColor(getColor(R.color.darkGray));
+                }
+
+                return true;
             }
         });
 
@@ -579,16 +810,135 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
         tileBtnArray.add(tileBtn5);
         tileBtnArray.add(tileBtn6);
 
+        flippedTiles.add(false);
+        flippedTiles.add(false);
+        flippedTiles.add(false);
+        flippedTiles.add(false);
+        flippedTiles.add(false);
+        flippedTiles.add(false);
+
         startGameBtn = findViewById(R.id.start_game_btn);
         gameNameTV = findViewById(R.id.game_name);
 
+        costPerEt = findViewById(R.id.buysell_cost);
         buyButton = findViewById(R.id.buy_btn);
+
+        increaseBuyBtn = findViewById(R.id.buy_inc_btn);
+        increaseSellBtn = findViewById(R.id.sell_inc_btn);
+
+        decreaseSellBtn = findViewById(R.id.sell_dec_btn);
+        decreaseBuyBtn = findViewById(R.id.buy_dec_btn);
+
+        decreaseTradeBtn = findViewById(R.id.trade_dec_btn);
+        increaseTradeBtn = findViewById(R.id.trade_inc_btn);
+
+
+        decreaseTradeBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String buyAmount = tradeEt.getText().toString();
+                buyAmount = buyAmount.trim();
+                Long a = Long.valueOf(buyAmount);
+                int amount = a.intValue();
+
+                if(amount > 1){
+                    amount = amount - 2 ;
+                    String s = "" + amount;
+                    tradeEt.setText(s);
+                }
+            }
+        });
+        increaseTradeBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String buyAmount = tradeEt.getText().toString();
+                buyAmount = buyAmount.trim();
+                Long a = Long.valueOf(buyAmount);
+                int amount = a.intValue();
+
+                if(amount < 23){
+                    amount = amount + 2;
+                    String s = "" + amount;
+                    tradeEt.setText(s);
+                }else {
+                    Toast.makeText(BasicGameActivity.this, "Listen here, buddy", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        increaseSellBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String buyAmount = sellEt.getText().toString();
+                buyAmount = buyAmount.trim();
+                Long a = Long.valueOf(buyAmount);
+                int amount = a.intValue();
+
+                if(amount <= 24){
+                    amount++;
+                    String s = "" + amount;
+                    sellEt.setText(s);
+                }
+            }
+        });
+
+        increaseBuyBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String buyAmount = buyEt.getText().toString();
+                buyAmount = buyAmount.trim();
+                Long a = Long.valueOf(buyAmount);
+                int amount = a.intValue();
+
+                if(amount < 3){
+                    amount++;
+                    String s = "" + amount;
+                    buyEt.setText(s);
+                }
+            }
+        });
+
+
+        decreaseBuyBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String buyAmount = buyEt.getText().toString();
+                buyAmount = buyAmount.trim();
+                Long a = Long.valueOf(buyAmount);
+                int amount = a.intValue();
+
+                if(amount > 0){
+                    amount--;
+                    String s = "" + amount;
+                    buyEt.setText(s);
+                }
+            }
+        });
+
+
+        decreaseSellBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String buyAmount = sellEt.getText().toString();
+                buyAmount = buyAmount.trim();
+                Long a = Long.valueOf(buyAmount);
+                int amount = a.intValue();
+
+                if(amount > 0){
+                    amount--;
+                    String s = "" + amount;
+                    sellEt.setText(s);
+                }
+            }
+        });
+
+
         buyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String buyAmount = buyEt.getText().toString();
                 buyAmount = buyAmount.trim();
-                if(buyAmount.equals("")){
+                if(buyAmount.equals("0")){
                     Toast.makeText(BasicGameActivity.this, "Enter a valid purchase amount", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -626,7 +976,7 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
                 String sellAmount = sellEt.getText().toString();
                 sellAmount = sellAmount.trim();
-                if(sellAmount.equals("")){
+                if(sellAmount.equals("0")){
                     Toast.makeText(BasicGameActivity.this, "Enter a valid sell amount", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -637,7 +987,7 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                 if(amount <= currentPlayer.getCards().get(selectedCorporation)) {
                     gameDataController.sell(amount, currentPlayer, selectedCorporation);
                 }else{
-                    String s = "You don't have enough" + selectedCorporation + " to sell, my poor chum";
+                    String s = "You don't have enough " + selectedCorporation + " to sell, my poor chum";
                     Toast.makeText(BasicGameActivity.this, s, Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -699,10 +1049,7 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
             }
         });
 
-        buyEt = findViewById(R.id.buy_et);
-        sellEt = findViewById(R.id.sell_et);
-        tradeForLbl = findViewById(R.id.trade_for_tv);
-        tradeEt = findViewById(R.id.trade_et);
+
 
         tradeEt.addTextChangedListener(new TextWatcher() {
 
@@ -739,12 +1086,7 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
         sellLbl = findViewById(R.id.sell_tv);
         tradeLbl = findViewById(R.id.trade_tv);
 
-
-
         buyselltradeView = findViewById(R.id.buysell_view);
-
-
-
 
 
 
@@ -764,17 +1106,33 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                 gameNameTV.setText(title);
                 endGame.setVisibility(View.VISIBLE);
 
+                if(!gameDataController.isGameStarted()){
+                    endGame.setVisibility(View.VISIBLE);
+                    startGameBtn.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            startGameCheck();
+                        }
+                    });
+                }else{
+                    startGameBtn.setVisibility(GONE);
+                    if (currentUid.equals(gameDataController.getCreator())) {
+                        endGame.setVisibility(View.VISIBLE);
+                    }
+                }
+
+
             }else{
-                gameInSession = gameDataController.isGameStarted();
+
                 String title = gameName + "'s Game";
                 gameNameTV.setText(title);
 
                 if (gameDataController.isGameStarted()) {
-                    startGameBtn.setVisibility(View.GONE);
+                    startGameBtn.setVisibility(GONE);
                     if (currentUid.equals(gameDataController.getCreator())) {
                         endGame.setVisibility(View.VISIBLE);
                     }
-                } else if (!currentUid.equals(gameDataController.getCreator())) {
+                } else {
                     String s = "Leave Game";
                     startGameBtn.setText(s);
                     startGameBtn.setOnClickListener(new View.OnClickListener() {
@@ -785,18 +1143,8 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                             onBackPressed();
                         }
                     });
-
-                } else {
-                    endGame.setVisibility(View.VISIBLE);
-                    startGameBtn.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            startGameCheck();
-                        }
-                    });
                 }
             }
-
 
             setGameListener();
 
@@ -829,7 +1177,7 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                 gameNameTV.setText(title);
 
                 if (gameDataController.isGameStarted()) {
-                    startGameBtn.setVisibility(View.GONE);
+                    startGameBtn.setVisibility(GONE);
                     if (currentUid.equals(gameDataController.getCreator())) {
                         endGame.setVisibility(View.VISIBLE);
                     }
@@ -863,24 +1211,7 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
             }
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        
 
         int VERTICAL_ITEM_SPACE = 5;
         recyclerView.addItemDecoration(new SpacingItemDecoration(VERTICAL_ITEM_SPACE, VERTICAL_ITEM_SPACE));
@@ -911,8 +1242,8 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
         });
 
         setupBoardTVs();
-
     }
+
 
 
 
@@ -931,7 +1262,7 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
             animationB.setDuration(300);
             animationB.start();
 
-            resetButtonBackgrounds();
+            resetButtonColors();
             selectedTile = "";
             tileButtonsLayout.setVisibility(View.INVISIBLE);
             toggleTileGrid.setImageDrawable(getDrawable(R.drawable.right_arrow));
@@ -949,6 +1280,14 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
             toggleTileGrid.setImageDrawable(getDrawable(R.drawable.left_arrow));
         }
+    }
+
+
+
+
+
+    private void shrinkTileAnimation(Button b){
+        b.animate().scaleX(0.5f).scaleY(0.5f).setDuration(300);
     }
 
 
@@ -1063,9 +1402,10 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
         buyselltradeView.setVisibility(View.INVISIBLE);
 
         tradeSpinner.setSelection(0);
-        buyEt.setText("");
-        sellEt.setText("");
-        tradeEt.setText("");
+        buyEt.setText("0");
+        sellEt.setText("0");
+        tradeEt.setText("0");
+        costPerEt.setText("");
         String s = " For ";
         tradeForLbl.setText(s);
 
@@ -1084,13 +1424,13 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
     private void setAndShowPopupData(String corporation){
 
+        String costPer = "Buy/Sell  $" + gameDataController.getCostPerUnit(corporation);
+        costPerEt.setText(costPer);
+
 
         switch (corporation){
 
-
             case "Spark":
-
-//                alphaView.setBackgroundColor(getColor(R.color.sparkColor));
 
                 buyLbl.setTextColor(getColor(R.color.sparkColor));
                 sellLbl.setTextColor(getColor(R.color.sparkColor));
@@ -1098,7 +1438,6 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                 break;
 
             case "Nestor":
-//                alphaView.setBackgroundColor(getColor(R.color.nestorColor));
 
                 buyLbl.setTextColor(getColor(R.color.nestorColor));
                 sellLbl.setTextColor(getColor(R.color.nestorColor));
@@ -1107,22 +1446,18 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
             case "Rove":
 
-//                alphaView.setBackgroundColor(getColor(R.color.roveColor));
-
                 buyLbl.setTextColor(getColor(R.color.roveColor));
                 sellLbl.setTextColor(getColor(R.color.roveColor));
                 tradeLbl.setTextColor(getColor(R.color.roveColor));
                 break;
 
             case "Fleet":
-//                alphaView.setBackgroundColor(getColor(R.color.fleetColor));
 
                 buyLbl.setTextColor(getColor(R.color.fleetColor));
                 sellLbl.setTextColor(getColor(R.color.fleetColor));
                 tradeLbl.setTextColor(getColor(R.color.fleetColor));
                 break;
             case "Etch":
-//                alphaView.setBackgroundColor(getColor(R.color.etchColor));
 
                 buyLbl.setTextColor(getColor(R.color.etchColor));
                 sellLbl.setTextColor(getColor(R.color.etchColor));
@@ -1130,7 +1465,6 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                 break;
 
             case "Bolt":
-//                alphaView.setBackgroundColor(getColor(R.color.boltColor));
 
                 buyLbl.setTextColor(getColor(R.color.boltColor));
                 sellLbl.setTextColor(getColor(R.color.boltColor));
@@ -1138,7 +1472,6 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                 break;
 
             case "Echo":
-//                alphaView.setBackgroundColor(getColor(R.color.echoColor));
 
                 buyLbl.setTextColor(getColor(R.color.echoColor));
                 sellLbl.setTextColor(getColor(R.color.echoColor));
@@ -1148,13 +1481,17 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
         }
 
         selectedCorporation = corporation;
-        buyLbl.setText(corporation);
-        sellLbl.setText(corporation);
-        tradeLbl.setText(corporation);
+
+        String str = corporation + " (" + currentPlayer.cards.get(corporation) + ")";
+        buyLbl.setText(str);
+        sellLbl.setText(str);
+        tradeLbl.setText(str);
         String s = " For 0 ";
         tradeForLbl.setText(s);
 
         buyselltradeView.setVisibility(View.VISIBLE);
+
+
 
     }
 
@@ -1164,7 +1501,10 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
         tileButtonsLayout.setVisibility(View.VISIBLE);
     }
+    private void hideTileActionsView(){
 
+        tileButtonsLayout.setVisibility(View.INVISIBLE);
+    }
 
 
 
@@ -1172,18 +1512,18 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
     private void initializePlayerUI(){
 
         String open = "Draw";
-        tileBtn1.setText(open);
-        tileBtn1.setTextColor(getColor(R.color.inGameColor));
-        tileBtn2.setText(open);
-        tileBtn2.setTextColor(getColor(R.color.inGameColor));
-        tileBtn3.setText(open);
-        tileBtn3.setTextColor(getColor(R.color.inGameColor));
-        tileBtn4.setText(open);
-        tileBtn4.setTextColor(getColor(R.color.inGameColor));
-        tileBtn5.setText(open);
-        tileBtn5.setTextColor(getColor(R.color.inGameColor));
-        tileBtn6.setText(open);
-        tileBtn6.setTextColor(getColor(R.color.inGameColor));
+        tileBtnArray.get(0).setText(open);
+        tileBtnArray.get(0).setTextColor(getColor(R.color.inGameColor));
+        tileBtnArray.get(1).setText(open);
+        tileBtnArray.get(1).setTextColor(getColor(R.color.inGameColor));
+        tileBtnArray.get(2).setText(open);
+        tileBtnArray.get(2).setTextColor(getColor(R.color.inGameColor));
+        tileBtnArray.get(3).setText(open);
+        tileBtnArray.get(3).setTextColor(getColor(R.color.inGameColor));
+        tileBtnArray.get(4).setText(open);
+        tileBtnArray.get(4).setTextColor(getColor(R.color.inGameColor));
+        tileBtnArray.get(5).setText(open);
+        tileBtnArray.get(5).setTextColor(getColor(R.color.inGameColor));
     }
 
 
@@ -1192,10 +1532,10 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
     private void setNewGameData(){
 
-        Map<String, Object> newGameData = new HashMap<>();
+        final Map<String, Object> newGameData = new HashMap<>();
 
-        DocumentReference ref = FirebaseFirestore.getInstance().collection("ActiveGames").document();
-        String key = ref.getId();
+        DocumentReference ref = DataManager.activeGamesPath().document();
+        final String key = ref.getId();
         gameDataController.gameId = key;
 
 
@@ -1211,23 +1551,26 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
         newGameData.put("gameStarted", false);
         newGameData.put("gameId",key);
         newGameData.put("lastTilePlayed", "");
-        newGameData.put("moveDescription", "");
-
-
-
+        newGameData.put("turn", "");
+        newGameData.put("finalPayoutsComplete", false);
+        newGameData.put("corpSizeValues", gameDataController.getCorpSizeValues());
+        newGameData.put("moveDescription", "Welcome");
+        newGameData.put("mergeRound",false);
+        newGameData.put("mergeData",new HashMap<>());
         initializePlayerUI();
 
+        //first set the ActiveGames, then Game updates
         ref.set(newGameData).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if(task.isSuccessful()){
-
 
                     currentPlayer = gameDataController.addPlayer(currentUid, userName);
 
                     Intent i = getIntent();
                     i.putExtra("isCreator", false);
                     i.putExtra("gameObject", DataManager.serializeGameData(gameDataController));
+
 
                     setGameListener();
 
@@ -1237,6 +1580,8 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                             startGameCheck();
                         }
                     });
+
+
                 }
             }
         });
@@ -1248,7 +1593,7 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
         //here create player object, add to player order object
         //Write to DB
-        currentPlayer = gameDataController.addPlayer(currentUid, userName);
+        gameDataController.addPlayer(currentUid, userName);
         initializePlayerUI();
         setGameListener();
 
@@ -1282,19 +1627,16 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
 
 
-    private void drawTileAction() {
+    private void drawTileAction(int pos) {
 
 
         if(!canDraw()){
             return;
         }
-
-        resetButtonBackgrounds();
         selectedTile = "";
+        resetButtonColors();
 
-
-        gameDataController.drawTile(currentPlayer);
-
+        gameDataController.drawTile(currentPlayer,  pos);
 
     }
 
@@ -1302,11 +1644,11 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
     private void playTileAction(String tile) {
 
-        if(tile.equals("Draw") || tile.equals("")){
+        if(tile.equals("DRAW") || tile.equals("")){
             return;
         }
 
-
+        shrinkTileAnimation(tileBtnArray.get(selectedButtonIndex));
         tileButtonsLayout.setVisibility(View.INVISIBLE);
         lastPlayedTileLbl.setText(tile);
         gameDataController.playTile(tile, currentPlayer);
@@ -1317,32 +1659,39 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
     private void unplayableTileAction() {
 
-        if(selectedTile.equals("Open")){
+        if(selectedTile.equals("Draw")){
             return;
         }
+
+        int pos = -1;
+        for(Button button : tileBtnArray){
+            if(button.getText() == selectedTile){
+                pos = tileBtnArray.indexOf(button);
+                break;
+            }
+        }
+
+        shrinkTileAnimation(tileBtnArray.get(selectedButtonIndex));
         tileButtonsLayout.setVisibility(View.INVISIBLE);
 
-        gameDataController.discardTile(selectedTile, currentPlayer);
+        gameDataController.discardTile(selectedTile, currentPlayer, pos);
     }
-
 
 
 
     private void setGameListener(){
 
-
         if(gameListener != null){
-
             gameListener.remove();
             gameListener = null;
-
         }
-        gameListener = FirebaseFirestore.getInstance().collection("ActiveGames").document(gameDataController.gameId).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+
+        gameListener = DataManager.activeGamesPath().document(gameDataController.gameId).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
 
                 if(e != null || !documentSnapshot.exists()) {
-                    Toast.makeText(BasicGameActivity.this, "Failed to update game data", Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(BasicGameActivity.this, "Failed to update game data", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -1380,12 +1729,41 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                 game.setSearchable((boolean) documentSnapshot.get("searchable"));
                 game.setGameStarted((boolean) documentSnapshot.get("gameStarted"));
                 game.setGameComplete((boolean) documentSnapshot.get("gameComplete"));
+
+                game.setMergeRound((boolean) documentSnapshot.get("mergeRound"));
+                game.setMergerData((Map<String, Object>) documentSnapshot.get("mergerData"));
+
                 game.setCreator((String) documentSnapshot.get("creator"));
                 game.setLastTilePlayed((String) documentSnapshot.get("lastTilePlayed"));
                 game.setMoveDescription((String) documentSnapshot.get("moveDescription"));
+                game.setTurn((String) documentSnapshot.get("turn"));
+
+
+                if(documentSnapshot.get("finalPayoutsComplete") != null){
+                    game.setFinalPayoutsComplete((boolean) documentSnapshot.get("finalPayoutsComplete"));
+                }
+
+                Map<String, Long> sizes = (Map<String, Long>) documentSnapshot.get("corpSizeValues");
+                if(sizes != null){
+                    game.setCorpSizeValues(sizes);
+
+                }else{
+                    game.setCorpSizeValues(new HashMap<String, Long>());
+                }
+
+                game.setCorpSizeValues((Map<String, Long>) documentSnapshot.get("corpSizeValues"));
 
                 Map<String, Map<String, Object>> rawPlayers = (Map<String, Map<String, Object>>) documentSnapshot.get("players");
                 Map<String, Player> ps = new HashMap<>();
+
+                long oldMoney = 0;
+                if(currentPlayer != null && gameDataController.getPlayers().get(currentUid) != null){
+                    oldMoney = gameDataController.getPlayers().get(currentUid).money;
+                }
+                String oldTurn = "";
+                if(currentPlayer != null){
+                    oldTurn = gameDataController.getTurn();
+                }
 
                 for(Map<String, Object> p : rawPlayers.values()){
 
@@ -1408,17 +1786,25 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                         gameInSession = true;
 
                         startGameBtn.setVisibility(View.GONE);
+                        endGame.setVisibility(View.GONE);
+                        endGameWithPayouts.setVisibility(View.GONE);
                         Map<String, Object> updates = new HashMap<>();
                         updates.put("inGame", true);
                         updates.put("gameId", gameDataController.gameId);
                         FirebaseFirestore.getInstance().collection("Users").document(currentUid).update(updates);
                     }
                 }
+
                 String oldMessage = gameDataController.getMoveDescription();
                 String oldTile = gameDataController.getLastTilePlayed();
+
                 gameDataController = game;
                 adapter.setGameObject(game);
-                refreshUI(oldMessage, oldTile);
+                if(gameDataController.mListener == null){
+                    gameDataController.setOnTileListner(BasicGameActivity.this);
+                }
+
+                refreshUI(oldMessage, oldTile, oldMoney, oldTurn);
 
             }
         });
@@ -1428,7 +1814,36 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
 
 
-    private void refreshUI(String oldMessage, String oldTile){
+    private void refreshUI(String oldMessage, String oldTile, long oldMoney, String oldTurn){
+
+
+        if(gameDataController.isFinalPayoutsComplete()){
+            disableActionsInput();
+            //SHOW FINAL PAYOUT BREAKDOWN
+        }
+
+        if(gameDataController.getTurn().equals(currentPlayer.userId)){
+            if(!oldTurn.equals(currentUid)){
+                showTurnDialog();
+            }
+            enableAllActions();
+            endTurnButton.setVisibility(View.VISIBLE);
+
+        }else{
+            disableActionsInput();
+            endTurnButton.setVisibility(View.GONE);
+        }
+
+        if(gameDataController.finalPayoutsComplete){
+            if(gameListener != null){
+                gameListener.remove();
+                gameListener = null;
+            }
+            Toast.makeText(this, "Game Ended", Toast.LENGTH_SHORT).show();
+            showPaymentDialog(currentPlayer.money, "Game Over, your final score is", true);
+        }else {
+            endGameWithPayouts.setVisibility(GONE);
+        }
 
         if(gameDataController.isGameComplete() && !gameDataController.isSearchable()){
             if(gameListener != null){
@@ -1445,6 +1860,14 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
         }
 
 
+
+        if(gameDataController.canEndGame() && !gameDataController.finalPayoutsComplete){
+            endGameWithPayouts.setVisibility(View.VISIBLE);
+        }else{
+
+            endGameWithPayouts.setVisibility(View.GONE);
+        }
+
         Map<String, Long> cardsRemaining = gameDataController.cards;
         Map<String, Player> players = gameDataController.players;
 
@@ -1457,13 +1880,13 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
         adapter.notifyDataSetChanged();
 
-        String rSpark = "R: " + cardsRemaining.get(Corporation.SPARK.label) + " ";
-        String rNestor = "R: " + cardsRemaining.get(Corporation.NESTOR.label) + " ";
-        String rFleet= "R: " + cardsRemaining.get(Corporation.FLEET.label) + " ";
-        String rRove = "R: " + cardsRemaining.get(Corporation.ROVE.label) + " ";
-        String rEtch = "R: " + cardsRemaining.get(Corporation.ETCH.label) + " ";
-        String rBolt = "R: " + cardsRemaining.get(Corporation.BOLT.label) + " ";
-        String rEcho = "R: " + cardsRemaining.get(Corporation.ECHO.label) + " ";
+        String rSpark = "bank: " + cardsRemaining.get(Corporation.SPARK.label) + " ";
+        String rNestor = "bank: " + cardsRemaining.get(Corporation.NESTOR.label) + " ";
+        String rFleet= "bank: " + cardsRemaining.get(Corporation.FLEET.label) + " ";
+        String rRove = "bank: " + cardsRemaining.get(Corporation.ROVE.label) + " ";
+        String rEtch = "bank: " + cardsRemaining.get(Corporation.ETCH.label) + " ";
+        String rBolt = "bank: " + cardsRemaining.get(Corporation.BOLT.label) + " ";
+        String rEcho = "bank: " + cardsRemaining.get(Corporation.ECHO.label) + " ";
 
         sparkRemaining.setText(rSpark);
         nestorRemaining.setText(rNestor);
@@ -1473,44 +1896,117 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
         boltRemaining.setText(rBolt);
         echoRemaining.setText(rEcho);
 
+        List<String> sparkArray = gameDataController.getLiveCorporations().get(Corporation.SPARK.label);
+
+        String sizeSpark = "size: ";
+        if(sparkArray != null){
+            sizeSpark = "size: " + sparkArray.size();
+        }else{
+            sizeSpark = "--";
+        }
+        List<String> nestorArray = gameDataController.getLiveCorporations().get(Corporation.NESTOR.label);
+        String sizeNestor = "size: ";
+        if(nestorArray != null){
+            sizeNestor = "size: " + nestorArray.size();
+        }else{
+            sizeNestor = "--";
+        }
+        List<String> fleetArray = gameDataController.getLiveCorporations().get(Corporation.FLEET.label);
+        String sizeFleet = "";
+        if(fleetArray != null){
+            sizeFleet = "size: " + fleetArray.size();
+        }else{
+            sizeFleet = "--";
+        }
+
+        List<String> roveArray = gameDataController.getLiveCorporations().get(Corporation.ROVE.label);
+        String sizeRove = "size: ";
+        if(roveArray != null){
+            sizeRove = "size: " + roveArray.size();
+        }else{
+            sizeRove = "--";
+        }
+
+        List<String> etchArray = gameDataController.getLiveCorporations().get(Corporation.ETCH.label);
+        String sizeEtch = "";
+        if(etchArray != null){
+            sizeEtch = "size: " + etchArray.size();
+        }else{
+            sizeEtch = "--";
+        }
+
+        List<String> boltArray = gameDataController.getLiveCorporations().get(Corporation.BOLT.label);
+        String sizeBolt = "";
+        if(boltArray != null){
+            sizeBolt = "size: " + boltArray.size();
+        }else{
+            sizeBolt = "--";
+        }
+        List<String> echoArray = gameDataController.getLiveCorporations().get(Corporation.ECHO.label);
+        String sizeEcho = "";
+        if(echoArray != null){
+            sizeEcho = "size: " + echoArray.size();
+        }else{
+            sizeEcho = "--";
+        }
+
+        sparkCount.setText(sizeSpark);
+        nestorCount.setText(sizeNestor);
+        roveCount.setText(sizeRove);
+        fleetCount.setText(sizeFleet);
+        etchCount.setText(sizeEtch);
+        boltCount.setText(sizeBolt);
+        echoCount.setText(sizeEcho);
+
+
+
 
         if(currentPlayer != null){
 
-            String sSpark = "" + currentPlayer.cards.get(Corporation.SPARK.label) + " Spark ";
-            String sNestor = "" + currentPlayer.cards.get(Corporation.NESTOR.label) + " Nestor ";
-            String sFleet= "" + currentPlayer.cards.get(Corporation.FLEET.label) + " Fleet ";
-            String sRove = "" + currentPlayer.cards.get(Corporation.ROVE.label) + " Rove ";
-            String sEtch = "" + currentPlayer.cards.get(Corporation.ETCH.label) + " Etch ";
-            String sBolt = "" + currentPlayer.cards.get(Corporation.BOLT.label) + " Bolt ";
-            String sEcho = "" + currentPlayer.cards.get(Corporation.ECHO.label) + " Echo ";
 
-            sparkCount.setText(sSpark);
+            NumberFormat myFormat = NumberFormat.getInstance();
+            myFormat.setGroupingUsed(true);
+            String money = myFormat.format(currentPlayer.getMoney());
+            playerMoneyTV.setText(money);
 
-            nestorCount.setText(sNestor);
-            roveCount.setText(sRove);
-            fleetCount.setText(sFleet);
-            etchCount.setText(sEtch);
-            boltCount.setText(sBolt);
-            echoCount.setText(sEcho);
+
+
+            String cSpark = "" + currentPlayer.cards.get(Corporation.SPARK.label);
+            String cNestor = "" + currentPlayer.cards.get(Corporation.NESTOR.label);
+            String cFleet= "" + currentPlayer.cards.get(Corporation.FLEET.label);
+            String cRove = "" + currentPlayer.cards.get(Corporation.ROVE.label);
+            String cEtch = "" + currentPlayer.cards.get(Corporation.ETCH.label);
+            String cBolt = "" + currentPlayer.cards.get(Corporation.BOLT.label);
+            String cEcho = "" + currentPlayer.cards.get(Corporation.ECHO.label);
+
+            sparkButton.setText(cSpark);
+            nestorButton.setText(cNestor);
+            roveButton.setText(cRove);
+            fleetButton.setText(cFleet);
+            etchButton.setText(cEtch);
+            echoButton.setText(cEcho);
+            boltButton.setText(cBolt);
         }
 
 
-
         if(gameDataController.isGameStarted()){
+
+
+            endGame.setVisibility(View.GONE);
+            startGameBtn.setVisibility(View.INVISIBLE);
 
             if(!gameDataController.getMoveDescription().equals(oldMessage)){
                 Toast.makeText(this, gameDataController.moveDescription, Toast.LENGTH_SHORT).show();
             }
-
-
             lastPlayedTileLbl.setText(gameDataController.getLastTilePlayed());
 
-        }
-
-
-
-        if(gameDataController.isGameStarted()){
-            startGameBtn.setVisibility(View.INVISIBLE);
+            if(oldMoney != 0 && gameDataController.isGameStarted()){
+                if(currentPlayer.money > oldMoney){
+                    onPaid(currentPlayer.money - oldMoney);
+                }else if(currentPlayer.money < oldMoney){
+                    onPayment(oldMoney - currentPlayer.money);
+                }
+            }
         }
 
         if(currentPlayer != null){
@@ -1525,52 +2021,48 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
     private void setTileButtons(List<String> tiles){
 
-        resetButtonTitles();
-        resetButtonBackgrounds();
-
         for (int i = 0; i < tiles.size(); i++){
 
             if(tiles.get(i).equals("")){
-                String draw = "Draw";
+                String draw = "DRAW";
                 tileBtnArray.get(i).setText(draw);
-                tileBtnArray.get(i).setTextColor(getColor(R.color.inGameColor));
             }else{
-                tileBtnArray.get(i).setTextColor(getColor(R.color.textColor));
                 tileBtnArray.get(i).setText(tiles.get(i));
             }
 
         }
 
+        resetButtonColors();
+
 
     }
 
 
-    private void resetButtonBackgrounds(){
-        tileBtn1.setBackground(getDrawable(R.drawable.rounded_white_rectangle_bordered));
-        tileBtn2.setBackground(getDrawable(R.drawable.rounded_white_rectangle_bordered));
-        tileBtn3.setBackground(getDrawable(R.drawable.rounded_white_rectangle_bordered));
-        tileBtn4.setBackground(getDrawable(R.drawable.rounded_white_rectangle_bordered));
-        tileBtn5.setBackground(getDrawable(R.drawable.rounded_white_rectangle_bordered));
-        tileBtn6.setBackground(getDrawable(R.drawable.rounded_white_rectangle_bordered));
+    private void resetButtonColors(){
 
+
+        for(int i = 0;i<tileBtnArray.size();i++){
+
+            if(flippedTiles.get(i)){
+                tileBtnArray.get(i).setBackground(getDrawable(R.drawable.rounded_grey_rectangle_bordered));
+                tileBtnArray.get(i).setTextColor(getColor(R.color.darkGray));
+
+            }else if(tileBtnArray.get(i).getText().equals("DRAW")){
+
+                tileBtnArray.get(i).setBackground(getDrawable(R.drawable.rounded_white_rectangle_bordered));
+                tileBtnArray.get(i).setTextColor(getColor(R.color.inGameColor));
+
+            }else if (tileBtnArray.get(i).getText().equals(selectedTile)) {
+
+                tileBtnArray.get(i).setBackground(getDrawable(R.drawable.rounded_green_rectangle_bordered));
+                tileBtnArray.get(i).setTextColor(getColor(R.color.textColor));
+            }else{
+                tileBtnArray.get(i).setBackground(getDrawable(R.drawable.rounded_white_rectangle_bordered));
+                tileBtnArray.get(i).setTextColor(getColor(R.color.textColor));
+            }
+        }
     }
 
-    private void resetButtonTitles(){
-        String open = "Draw";
-        tileBtn1.setText(open);
-        tileBtn1.setTextColor(getColor(R.color.inGameColor));
-        tileBtn2.setText(open);
-        tileBtn2.setTextColor(getColor(R.color.inGameColor));
-        tileBtn3.setText(open);
-        tileBtn3.setTextColor(getColor(R.color.inGameColor));
-        tileBtn4.setText(open);
-        tileBtn4.setTextColor(getColor(R.color.inGameColor));
-        tileBtn5.setText(open);
-        tileBtn5.setTextColor(getColor(R.color.inGameColor));
-        tileBtn6.setText(open);
-        tileBtn6.setTextColor(getColor(R.color.inGameColor));
-
-    }
 
 
 
@@ -1733,8 +2225,16 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
 
 
+
+
+
+
     public void determinePlayTileAction(){
         String tile = selectedTile;
+        if(tile.equals("")){
+            hideTileActionsView();
+            return;
+        }
         //Here we need to evaluate the tile being laid and extract further actions
         List<String> results = gameDataController.evaluateAdjacentTiles(tile);
 
@@ -1788,7 +2288,6 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                     Toast.makeText(this, "No Corporations Remaining to start", Toast.LENGTH_SHORT).show();
                 }else{
                     showStarterRadioButtonDialog(available, finalAStartingCorpTileArray, tile);
-
                 }
 
                 break;
@@ -1796,10 +2295,10 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
             case "appending":
 
                 //here we're appending tiles to an existing corporation
+
                 results.remove(0);
                 String corp = results.get(0);
                 results.remove(0);
-
 
                 List<String> finalAddingCorpTileArray = new ArrayList<>();
                 List<String> appendingCorpList = gameDataController.getLiveCorporations().get(corp);
@@ -1810,7 +2309,7 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                     }
                 }
                 finalAddingCorpTileArray.add(tile);
-
+                shrinkTileAnimation(tileBtnArray.get(selectedButtonIndex));
                 //results should now just be the tiles to add to the existing corporation
                 gameDataController.addTilesToCorpAndPlay(corp,finalAddingCorpTileArray, currentPlayer, tile);
 
@@ -1820,10 +2319,7 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
                 //default is a merger
                 //if equal sizes, show user prompt, if not, auto put one under/into the other
-
                 Map<String, Long> sizesMap = new HashMap<>();
-
-
 
                 for(String s : results){
                     sizesMap.put(s, (long) gameDataController.getLiveCorporations().get(s).size());
@@ -1844,14 +2340,17 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                 String biggestName = "";
                 long largest = 0;
                 List<String> equal = new ArrayList<>();
-                //here we need to either get the largest corporation
+
+                //here we need to either get the largest corporation or equals
 
                 for(String s : sizesMap.keySet()){
 
                     long count = sizesMap.get(s);
+
                     if(count > largest){
                         biggestName = s;
                         largest = count;
+
                     }else if(count == largest){
                         if (!equal.contains(biggestName)){
                             equal.add(biggestName);
@@ -1862,31 +2361,28 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
 
 
-                List<String> finalMergeTileArray = new ArrayList<>();
+                List<String> stragglerTileArray = new ArrayList<>();
 
+
+                //this is to collect all loner tiles to add to final corp including the tile played
+                List<String> allCorpTiles = gameDataController.aggregrateCorpTiles();
                 for(String s : gameDataController.getAdjacentTileArray(tile)){
-                    if(!uplayedTiles.containsKey(s)){
-                        finalMergeTileArray.add(s);
+                    if(!uplayedTiles.containsKey(s) && !allCorpTiles.contains(s)){
+                        stragglerTileArray.add(s);
                     }
                 }
-                finalMergeTileArray.add(tile);
+                stragglerTileArray.add(tile);
 
 
-
-
-                if(equal.size() > 1){
-                    //show the prompt
-                    showMergerRadioButtonDialog(equal, finalMergeTileArray, tile);
+                if(equal.size() > 1 && equal.contains(biggestName)){
+                    //show the prompt to choose the under corp
+                    showMergerRadioButtonDialog(equal, results, stragglerTileArray, tile);
 
                 }else{
                     //perform auto merge
-
-                    gameDataController.mergeCorporations(biggestName, results, finalMergeTileArray, tile, currentPlayer);
+                    gameDataController.mergeCorporations(biggestName, results, stragglerTileArray, tile, currentPlayer);
+                    shrinkTileAnimation(tileBtnArray.get(selectedButtonIndex));
                 }
-
-
-
-
                 break;
         }
     }
@@ -1896,7 +2392,6 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
         final String[] corp = {""};
         AlertDialog.Builder builder = new AlertDialog.Builder(BasicGameActivity.this);
         builder.setTitle("Choose a start corporation");
-
 
         String[] corpArr = new String[corps.size()];
         corpArr = corps.toArray(corpArr);
@@ -1919,6 +2414,7 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                             Toast.makeText(BasicGameActivity.this, "Choose a starting corporation", Toast.LENGTH_SHORT).show();
                         }else{
 
+                            shrinkTileAnimation(tileBtnArray.get(selectedButtonIndex));
                             gameDataController.startCorporation(starting, startTiles, currentPlayer);
                             playTileAction(playingTile);
 
@@ -1944,24 +2440,25 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
 
 
 
-    private void showMergerRadioButtonDialog(final List<String> corps, final List<String> newTiles, final String startingTile) {
+    private void showMergerRadioButtonDialog(final List<String> equals, final List<String> involved ,final List<String> newTiles, final String startingTile) {
 
         final String[] corp = {""};
         AlertDialog.Builder builder = new AlertDialog.Builder(BasicGameActivity.this);
         builder.setTitle("Select WINNING Corporation");
 
-        String[] corpArr = new String[corps.size()];
-        corpArr = corps.toArray(corpArr);
+        String[] corpArr = new String[equals.size()];
+        corpArr = equals.toArray(corpArr);
 
         builder.setSingleChoiceItems(corpArr, -1, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int item) {
-                corp[0] = corps.get(item);
-                Toast.makeText(getApplicationContext(), corps.get(item), Toast.LENGTH_SHORT).show();
+                corp[0] = equals.get(item);
+                Toast.makeText(getApplicationContext(), equals.get(item), Toast.LENGTH_SHORT).show();
             }
         });
 
 
         builder.setPositiveButton("Merge",
+
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
 
@@ -1970,10 +2467,9 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
                         if(corp.equals("")){
                             Toast.makeText(BasicGameActivity.this, "Choose a corporation", Toast.LENGTH_SHORT).show();
 
-
                         }else{
                             //perform merge here
-                            gameDataController.mergeCorporations(winner, corps, newTiles, startingTile, currentPlayer);
+                            gameDataController.mergeCorporations(winner, involved, newTiles, startingTile, currentPlayer);
 
                         }
 
@@ -1990,5 +2486,186 @@ public class BasicGameActivity extends AppCompatActivity implements OnPlayerClic
         alert.show();
 
     }
+
+
+
+
+    @Override
+    public void onTileDrawn(String tile, int pos) {
+        //re-eneable buttons
+        tileBtnArray.get(pos).animate().scaleX(1.0f).scaleY(1.0f).setDuration(300);
+        tileBtnArray.get(pos).setEnabled(true);
+    }
+
+    @Override
+    public void onTileDiscarded(String tile, int pos) {
+
+        //re-enable buttons
+        tileBtnArray.get(pos).setEnabled(true);
+
+    }
+
+
+    public void onPaid(long amount) {
+
+        if(amount > 1000){
+            showPaymentDialog(amount, "Payday baby!", true);
+        }else{
+            showPaymentDialog(amount, "Eh, better than nothing!", true);
+        }
+    }
+
+
+    public void onPayment(long amount) {
+
+        if(amount > 2000){
+            showPaymentDialog(amount, "That's a pretty penny", false);
+        }else{
+            showPaymentDialog(amount, "You Paid", false);
+        }
+    }
+
+    boolean dialogShowing = false;
+    private void showPaymentDialog(long amount, String title, boolean positive){
+
+        AlertDialog.Builder builder;
+        if(positive){
+            builder = new AlertDialog.Builder(this, R.style.AlertDialogPaid);
+        }else{
+            builder = new AlertDialog.Builder(this, R.style.AlertDialogPayment);
+        }
+
+        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                dialogShowing = false;
+            }
+        });
+
+
+    // You can even inflate a layout to the AlertDialog.Builder, if looking to create a custom one.
+    // Add and fill all required builder methods, as per your need.
+    builder.setTitle(title);
+    String message = "" + amount;
+    builder.setMessage(message);
+
+
+
+    // Now create object of AlertDialog from the Builder.
+        final AlertDialog dialog = builder.create();
+
+
+    // Let's start with animation work. We just need to create a style and use it here as follows.
+        if (dialog.getWindow() != null)
+            dialog.getWindow().getAttributes().windowAnimations = R.style.SlidingDialogAnimation;
+
+
+
+        if(!dialogShowing){
+            dialogShowing = true;
+            dialog.show();
+        }
+    }
+
+
+    private boolean turnDialogShowing = false;
+    private void showTurnDialog() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialogPaid);
+        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                turnDialogShowing = false;
+            }
+        });
+
+        builder.setMessage("It's your turn");
+        builder.setTitle("Hey");
+
+        // Now create object of AlertDialog from the Builder.
+        final AlertDialog dialog = builder.create();
+
+
+        // Let's start with animation work. We just need to create a style and use it here as follows.
+        if (dialog.getWindow() != null)
+            dialog.getWindow().getAttributes().windowAnimations = R.style.SlidingDialogAnimation;
+
+
+        if (!turnDialogShowing) {
+            turnDialogShowing = true;
+            dialog.show();
+        }
+    }
+
+
+    private void disableActionsInput(){
+
+        buyButton.setEnabled(false);
+        sellButton.setEnabled(false);
+        tradeButton.setEnabled(false);
+
+        if(tileBtn1.getText().equals("") || tileBtn1.getText().equals("DRAW")){
+            tileBtn1.setEnabled(false);
+        }else{
+            tileBtn1.setEnabled(true);
+        }
+
+        if(tileBtn2.getText().equals("") || tileBtn2.getText().equals("DRAW")){
+            tileBtn2.setEnabled(false);
+        }else{
+            tileBtn2.setEnabled(true);
+        }
+        if(tileBtn3.getText().equals("") || tileBtn3.getText().equals("DRAW")){
+            tileBtn3.setEnabled(false);
+        }else{
+            tileBtn3.setEnabled(true);
+        }
+        if(tileBtn4.getText().equals("") || tileBtn4.getText().equals("DRAW")){
+            tileBtn4.setEnabled(false);
+        }else{
+            tileBtn4.setEnabled(true);
+        }
+        if(tileBtn5.getText().equals("") || tileBtn5.getText().equals("DRAW")){
+            tileBtn5.setEnabled(false);
+        }else{
+            tileBtn5.setEnabled(true);
+        }
+        if(tileBtn6.getText().equals("") || tileBtn6.getText().equals("DRAW")){
+            tileBtn6.setEnabled(false);
+        }else{
+            tileBtn6.setEnabled(true);
+        }
+
+
+        playTile.setEnabled(false);
+        discardTile.setEnabled(false);
+        endGameWithPayouts.setEnabled(false);
+    }
+
+    private void enableAllActions(){
+
+
+        buyButton.setEnabled(true);
+        sellButton.setEnabled(true);
+        tradeButton.setEnabled(true);
+
+
+
+        tileBtn1.setEnabled(true);
+        tileBtn2.setEnabled(true);
+        tileBtn3.setEnabled(true);
+        tileBtn4.setEnabled(true);
+        tileBtn5.setEnabled(true);
+        tileBtn6.setEnabled(true);
+
+        playTile.setEnabled(true);
+        discardTile.setEnabled(true);
+        endGameWithPayouts.setEnabled(true);
+    }
+
+
+
+
+
 
 }

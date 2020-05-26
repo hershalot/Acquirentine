@@ -42,8 +42,26 @@
             android:textSize="12sp"
             style="@style/Widget.AppCompat.Button.Borderless"/>
 
+        <Button
+            android:id="@+id/end_turn_button"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_marginStart="5dp"
+            android:padding="0dp"
+            android:layout_gravity="center_vertical"
+            android:visibility="invisible"
+            android:textColor="@color/placeholderColor"
+            android:background="@drawable/rounded_green_rectangle_bordered"
+            android:text="End Turn"
+            android:textAllCaps="false"
+            android:textSize="12sp"
+            style="@style/Widget.AppCompat.Button.Borderless"/>
 
     </LinearLayout>
+
+
+
+
 
     <include layout="@layout/board_layout"
         android:layout_alignParentTop="true"
@@ -127,35 +145,89 @@
         android:orientation="horizontal"
         android:layout_height="wrap_content">
 
+
+
         <LinearLayout
+            android:layout_width="wrap_content"
+            android:gravity="bottom"
+            android:layout_gravity="center"
+            android:orientation="vertical"
             android:layout_margin="5dp"
+            android:layout_height="wrap_content">
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/textColor"
+                android:layout_gravity="center_horizontal"
+                android:text="Cash" />
+
+            <TextView
+                android:id="@+id/player_money_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/textColor"
+                android:textSize="20sp"
+                android:layout_gravity="center"
+                android:textAlignment="center"
+                android:text="6000" />
+
+
+            <Button
+                android:id="@+id/end_game_payout"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:layout_marginStart="5dp"
+                android:padding="0dp"
+                android:layout_gravity="center_vertical"
+                android:visibility="gone"
+                android:textColor="@color/placeholderColor"
+                android:background="@drawable/rounded_green_rectangle_bordered"
+                android:text="End Game"
+                android:textAllCaps="false"
+                android:textSize="12sp"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                />
+
+        </LinearLayout>
+
+        <LinearLayout
             android:orientation="vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="end"
+            android:layout_gravity="center"
+            android:padding="5dp"
+            android:clipToPadding="false"
             android:layout_weight="1">
 
             <Button
                 android:layout_width="40dp"
                 android:layout_height="60dp"
-                android:gravity="top"
+                android:textAlignment="center"
                 android:id="@+id/spark_button"
                 android:background="@drawable/spark_card"/>
 
             <LinearLayout
-                android:layout_gravity="center_vertical"
+                android:layout_gravity="center"
                 android:orientation="vertical"
                 android:layout_marginEnd="4dp"
-                android:gravity="end"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:text="Spark"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:layout_weight="1"/>
 
                 <TextView
                     android:id="@+id/spark_count"
                     android:layout_width="wrap_content"
                     android:layout_height="0dp"
-                    android:textStyle="bold"
-                    android:textAlignment="textEnd"
+                    android:textAlignment="center"
                     android:layout_weight="1"/>
 
                 <TextView
@@ -163,7 +235,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="0dp"
                     android:textStyle="italic"
-                    android:textAlignment="textEnd"
+                    android:textAlignment="center"
                     android:text="R: "
                     android:layout_weight="1"/>
 
@@ -174,33 +246,39 @@
         </LinearLayout>
 
         <LinearLayout
-            android:layout_margin="5dp"
             android:orientation="vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="end"
+            android:layout_gravity="center"
+            android:padding="5dp"
+            android:clipToPadding="false"
             android:layout_weight="1">
 
             <Button
                 android:layout_width="40dp"
                 android:layout_height="60dp"
-                android:gravity="bottom"
+                android:textAlignment="center"
                 android:id="@+id/nestor_button"
                 android:background="@drawable/nestor_card"/>
 
             <LinearLayout
-                android:layout_gravity="center_vertical"
+                android:layout_gravity="center"
                 android:orientation="vertical"
                 android:layout_marginEnd="4dp"
-                android:gravity="end"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
 
                 <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:text="Nestor"
+                    android:textStyle="bold"
+                    android:textAlignment="textEnd"
+                    android:layout_weight="1"/>
+                <TextView
                     android:id="@+id/nestor_count"
                     android:layout_width="wrap_content"
                     android:layout_height="0dp"
-                    android:textStyle="bold"
                     android:textAlignment="textEnd"
                     android:layout_weight="1"/>
 
@@ -217,38 +295,41 @@
 
 
 
-
-
         </LinearLayout>
 
         <LinearLayout
-            android:layout_margin="5dp"
             android:orientation="vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="end"
+            android:layout_gravity="center"
+            android:padding="5dp"
+            android:clipToPadding="false"
             android:layout_weight="1">
 
             <Button
                 android:layout_width="40dp"
                 android:layout_height="60dp"
-                android:gravity="bottom"
+                android:textAlignment="center"
                 android:id="@+id/etch_button"
                 android:background="@drawable/etch_card"/>
 
             <LinearLayout
-                android:layout_gravity="center_vertical"
+                android:layout_gravity="center"
                 android:orientation="vertical"
                 android:layout_marginEnd="4dp"
-                android:gravity="end"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
-
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:text="Etch"
+                    android:textStyle="bold"
+                    android:textAlignment="textEnd"
+                    android:layout_weight="1"/>
                 <TextView
                     android:id="@+id/etch_count"
                     android:layout_width="wrap_content"
                     android:layout_height="0dp"
-                    android:textStyle="bold"
                     android:textAlignment="textEnd"
                     android:layout_weight="1"/>
 
@@ -268,32 +349,38 @@
         </LinearLayout>
 
         <LinearLayout
-            android:layout_margin="5dp"
             android:orientation="vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="end"
+            android:layout_gravity="center"
+            android:padding="5dp"
+            android:clipToPadding="false"
             android:layout_weight="1">
             <Button
                 android:layout_width="40dp"
                 android:layout_height="60dp"
                 android:id="@+id/rove_button"
-                android:gravity="bottom"
+                android:textAlignment="center"
                 android:background="@drawable/rove_card"/>
             <LinearLayout
-                android:layout_gravity="center_vertical"
+                android:layout_gravity="center"
                 android:orientation="vertical"
                 android:layout_marginEnd="4dp"
-                android:gravity="end"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
 
                 <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:text="Rove"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:layout_weight="1"/>
+                <TextView
                     android:id="@+id/rove_count"
                     android:layout_width="wrap_content"
                     android:layout_height="0dp"
-                    android:textStyle="bold"
-                    android:textAlignment="textEnd"
+                    android:textAlignment="center"
                     android:layout_weight="1"/>
 
                 <TextView
@@ -301,7 +388,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="0dp"
                     android:textStyle="italic"
-                    android:textAlignment="textEnd"
+                    android:textAlignment="center"
                     android:text="R: "
                     android:layout_weight="1"/>
 
@@ -312,34 +399,39 @@
         </LinearLayout>
 
         <LinearLayout
-            android:layout_margin="5dp"
             android:orientation="vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="end"
+            android:layout_gravity="center"
+            android:padding="5dp"
+            android:clipToPadding="false"
             android:layout_weight="1">
 
             <Button
                 android:layout_width="40dp"
                 android:layout_height="60dp"
                 android:id="@+id/fleet_button"
-                android:gravity="top"
+                android:textAlignment="center"
                 android:background="@drawable/fleet_card"/>
 
             <LinearLayout
-                android:layout_gravity="center_vertical"
+                android:layout_gravity="center"
                 android:orientation="vertical"
                 android:layout_marginEnd="4dp"
-                android:gravity="end"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
-
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:text="Fleet"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:layout_weight="1"/>
                 <TextView
                     android:id="@+id/fleet_count"
                     android:layout_width="wrap_content"
                     android:layout_height="0dp"
-                    android:textStyle="bold"
-                    android:textAlignment="textEnd"
+                    android:textAlignment="center"
                     android:layout_weight="1"/>
 
                 <TextView
@@ -357,32 +449,39 @@
         </LinearLayout>
 
         <LinearLayout
-            android:layout_margin="5dp"
             android:orientation="vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="end"
+            android:layout_gravity="center"
+            android:padding="5dp"
+            android:clipToPadding="false"
             android:layout_weight="1">
 
             <Button
                 android:layout_width="40dp"
                 android:layout_height="60dp"
                 android:id="@+id/echo_button"
+                android:textAlignment="center"
                 android:background="@drawable/echo_card"/>
+
             <LinearLayout
-                android:layout_gravity="center_vertical"
+                android:layout_gravity="center"
                 android:orientation="vertical"
                 android:layout_marginEnd="4dp"
-                android:gravity="end"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
-
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:text="Echo"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:layout_weight="1"/>
                 <TextView
                     android:id="@+id/echo_count"
                     android:layout_width="wrap_content"
                     android:layout_height="0dp"
-                    android:textStyle="bold"
-                    android:textAlignment="textEnd"
+                    android:textAlignment="center"
                     android:layout_weight="1"/>
 
                 <TextView
@@ -391,7 +490,7 @@
                     android:layout_height="0dp"
                     android:textStyle="italic"
                     android:text="R: "
-                    android:textAlignment="textEnd"
+                    android:textAlignment="center"
                     android:layout_weight="1"/>
 
             </LinearLayout>
@@ -400,33 +499,39 @@
         </LinearLayout>
 
         <LinearLayout
-            android:layout_margin="5dp"
             android:orientation="vertical"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="end"
+            android:layout_gravity="center"
+            android:padding="5dp"
+            android:clipToPadding="false"
             android:layout_weight="1">
 
             <Button
                 android:layout_width="40dp"
                 android:layout_height="60dp"
                 android:id="@+id/bolt_button"
+                android:textAlignment="center"
                 android:background="@drawable/bolt_card"/>
 
             <LinearLayout
-                android:layout_gravity="center_vertical"
+                android:layout_gravity="center"
                 android:orientation="vertical"
                 android:layout_marginEnd="4dp"
-                android:gravity="end"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
-
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:text="Bolt"
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:layout_weight="1"/>
                 <TextView
                     android:id="@+id/bolt_count"
                     android:layout_width="wrap_content"
                     android:layout_height="0dp"
-                    android:textStyle="bold"
-                    android:textAlignment="textEnd"
+                    android:textAlignment="center"
                     android:layout_weight="1"/>
 
                 <TextView
@@ -434,7 +539,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="0dp"
                     android:textStyle="italic"
-                    android:textAlignment="textEnd"
+                    android:textAlignment="center"
                     android:text="R: "
                     android:layout_weight="1"/>
 
@@ -444,6 +549,10 @@
 
         </LinearLayout>
 
+
+
+
+
     </LinearLayout>
 
 
@@ -451,7 +560,7 @@
         android:id="@+id/toggle_cards_btn"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_marginBottom="50dp"
+        android:layout_marginBottom="10dp"
         android:layout_marginEnd="-5dp"
         android:elevation="9dp"
         android:scaleType="fitCenter"
@@ -518,15 +627,15 @@
         android:id="@+id/toggle_tiles_btn"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_marginBottom="10dp"
+        android:layout_marginTop="10dp"
         android:layout_marginEnd="-5dp"
-        android:elevation="9dp"
+        android:elevation="11dp"
         android:scaleType="fitCenter"
         android:padding="4dp"
         android:src="@drawable/left_arrow"
         style="@style/Widget.AppCompat.Button.Borderless"
         android:background="@drawable/barely_rounded_green_rectangle_bordered"
-        android:layout_alignBottom="@+id/grid_layout"
+        android:layout_alignTop="@+id/grid_layout"
         android:layout_toEndOf="@+id/grid_layout"
         />
 
@@ -541,7 +650,7 @@
         android:layout_alignParentStart="true"
         android:rowCount="2"
         android:columnCount="3"
-        android:elevation="10dp"
+        android:elevation="12dp"
         android:background="@drawable/barely_rounded_lightgrey_rectangle"
         android:layout_height="wrap_content">
 

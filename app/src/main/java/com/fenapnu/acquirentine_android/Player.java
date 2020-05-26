@@ -25,10 +25,7 @@ public class Player {
 
 
 
-
     public Player(Map<String, Object> data){
-
-
 
         if(data.get("money") != null){
             money = (long) data.get("money");
@@ -83,20 +80,27 @@ public class Player {
         this.turnOrder = 0;
         this.userId = userId;
         this.money = 6000;
-        this.cards = new HashMap<>();
-        this.cards.put(Corporation.SPARK.label, (long) 0);
-        this.cards.put(Corporation.NESTOR.label, (long) 0);
-        this.cards.put(Corporation.ROVE.label, (long)0);
-        this.cards.put(Corporation.FLEET.label, (long)0);
-        this.cards.put(Corporation.ETCH.label, (long)0);
-        this.cards.put(Corporation.BOLT.label, (long)0);
-        this.cards.put(Corporation.ECHO.label, (long)0);
+        this.cards = getInitialCards();
         this.startTile = startTile;
         this.name = name;
         this.isGoing = false;
     }
 
 
+
+    public Map<String, Long> getInitialCards(){
+
+        Map<String, Long> cards = new HashMap<>();
+        cards.put(Corporation.SPARK.label, (long) 0);
+        cards.put(Corporation.NESTOR.label, (long) 0);
+        cards.put(Corporation.ROVE.label, (long)0);
+        cards.put(Corporation.FLEET.label, (long)0);
+        cards.put(Corporation.ETCH.label, (long)0);
+        cards.put(Corporation.BOLT.label, (long)0);
+        cards.put(Corporation.ECHO.label, (long)0);
+
+        return cards;
+    }
 
 
 
@@ -105,14 +109,7 @@ public class Player {
         tiles = Arrays.asList("", "", "", "", "" , "");
         userId = "";
         money = 6000;
-        cards = new HashMap<>();
-        cards.put(Corporation.SPARK.label, (long)0);
-        cards.put(Corporation.NESTOR.label, (long)0);
-        cards.put(Corporation.ROVE.label, (long)0);
-        cards.put(Corporation.FLEET.label, (long)0);
-        cards.put(Corporation.ETCH.label, (long)0);
-        cards.put(Corporation.BOLT.label, (long)0);
-        cards.put(Corporation.ECHO.label, (long)0);
+        cards = getInitialCards();
         startTile = "";
         turnOrder = 0;
 

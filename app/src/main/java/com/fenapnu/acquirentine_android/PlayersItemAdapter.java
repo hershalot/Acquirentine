@@ -49,10 +49,19 @@ public class PlayersItemAdapter extends RecyclerView.Adapter<PlayersItemAdapter.
 
         nameTextView.setText(player.name);
 
-        if(mGame.isGameStarted()){
-            startTileBtn.setVisibility(View.INVISIBLE);
-        }else{
+        if(mGame.isGameStarted() && mGame.turn.equals(player.userId)){
             startTileBtn.setVisibility(View.VISIBLE);
+            startTileBtn.setText("...");
+            startTileBtn.setBackground(getContext().getDrawable(R.drawable.rounded_green_rectangle_bordered));
+
+
+        }else if(mGame.isGameStarted()){
+            startTileBtn.setVisibility(View.INVISIBLE);
+
+        }
+        else{
+            startTileBtn.setVisibility(View.VISIBLE);
+            startTileBtn.setBackground(getContext().getDrawable(R.drawable.barely_rounded_white_rectangle_bordered));
             startTileBtn.setText(player.getStartTile());
         }
 

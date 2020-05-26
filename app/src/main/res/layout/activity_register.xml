@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@color/textBackgroundColor"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <RelativeLayout
+        android:id="@+id/register_nav_bar"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_marginTop="30dp">
+
+
+        <ImageButton
+            android:id="@+id/close_register_btn"
+            style="@style/Base.Widget.AppCompat.Button.Borderless"
+            android:layout_height="@dimen/back_button_size"
+            android:layout_width="@dimen/back_button_size"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="15dp"
+            android:layout_centerVertical="true"
+            android:padding="2dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/left_arrow_white" />
+
+        <TextView
+            android:id="@+id/register_title_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_centerInParent="true"
+            android:textColor="@color/white"
+            android:text="Register"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+    </RelativeLayout>
+
+
+
+
+    <ScrollView
+        android:layout_centerVertical="true"
+        android:layout_width="match_parent"
+        android:layout_below="@+id/register_nav_bar"
+        android:layout_height="wrap_content">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="300dp"
+
+            >
+
+
+
+            <EditText
+                android:id="@+id/register_name_et"
+                style="@style/TransaparentWithBorderEditTextTheme"
+                android:paddingStart="12dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="15dp"
+                android:autofillHints=""
+                android:hint="Name"
+                android:inputType="textEmailAddress"
+                tools:targetApi="o" />
+
+            <EditText
+                android:id="@+id/register_email_tv"
+                style="@style/TransaparentWithBorderEditTextTheme"
+                android:paddingStart="12dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="15dp"
+                android:autofillHints=""
+                android:hint="Email"
+                android:inputType="textEmailAddress"
+                tools:targetApi="o" />
+
+            <EditText
+                android:id="@+id/register_password_tv"
+                style="@style/TransaparentWithBorderEditTextTheme"
+                android:paddingStart="12dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="15dp"
+                android:hint="Password"
+                android:inputType="textPassword"
+                android:autofillHints=""
+                tools:targetApi="o" />
+
+
+            <EditText
+                android:id="@+id/register_confirm_password_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="15dp"
+                android:hint="Confirm Password"
+                android:inputType="textPassword"
+                style="@style/TransaparentWithBorderEditTextTheme"
+                android:paddingStart="12dp"
+                android:autofillHints=""
+                tools:targetApi="o" />
+
+            <TextView
+                android:id="@+id/register_info_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="15dp"
+                android:layout_marginEnd="10dp"
+                android:text="By hitting Submit you decline to pursue any legal action against me, your developer, for life."
+                android:textColor="@color/white"
+                android:textSize="12sp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_gravity="end">
+
+
+                <RelativeLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="35dp"
+                    android:layout_gravity="end">
+
+
+                    <Button
+                        android:id="@+id/register_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:text="Submit"
+                        style="@style/WhiteButton"
+                        android:layout_marginStart="20dp"
+
+ />
+
+                    <ProgressBar
+                        android:id="@+id/register_progress_bar"
+                        android:layout_marginStart="20dp"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_centerVertical="true"
+                        android:layout_centerHorizontal="true"
+                        android:visibility="invisible"
+                        >
+
+                    </ProgressBar>
+
+                </RelativeLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</RelativeLayout>

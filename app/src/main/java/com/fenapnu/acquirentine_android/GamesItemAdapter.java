@@ -60,7 +60,7 @@ public class GamesItemAdapter extends RecyclerView.Adapter<GamesItemAdapter.View
 
 
         if(game.gameStarted){
-            holder.itemView.setBackground(getContext().getDrawable(R.drawable.rounded_green_rectangle_bordered));
+            holder.itemView.setBackground(getContext().getDrawable(R.drawable.rounded_red_rectangle_bordered));
         }else{
             holder.itemView.setBackground(getContext().getDrawable(R.drawable.rounded_white_rectangle_bordered));
         }
