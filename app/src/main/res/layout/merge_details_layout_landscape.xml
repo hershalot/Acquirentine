@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:elevation="16dp"
     android:layout_height="match_parent">
+
 
     <RelativeLayout
         android:id="@+id/alpha_view"
@@ -13,13 +13,13 @@
         android:layout_height="match_parent"/>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:paddingTop="50dp"
+        android:layout_marginTop="30dp"
         android:id="@+id/payouts_table"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginStart="30dp"
+        android:layout_marginStart="15dp"
         android:layout_marginEnd="15dp"
         android:paddingBottom="60dp" />
 
@@ -29,7 +29,6 @@
         android:layout_alignParentBottom="true"
         android:layout_gravity="end"
         android:gravity="end"
-
         android:layout_height="wrap_content">
 
         <TextView
@@ -39,25 +38,20 @@
             android:textSize="30sp"
             android:textColor="@color/white"
             android:layout_gravity="center_vertical"
-            android:layout_marginEnd="15dp"
+            android:layout_marginEnd="5dp"
             android:text="This merged into that"/>
 
         <Button
             android:id="@+id/close_merge_layout"
             android:layout_width="wrap_content"
             android:layout_height="35dp"
-            android:layout_margin="2dp"
             android:layout_gravity="center_vertical"
+            android:layout_margin="2dp"
             style="@style/Widget.AppCompat.Button.Borderless"
             android:background="@drawable/rounded_green_rectangle_bordered"
             android:text="Close" />
 
     </LinearLayout>
-
-
-
-    
-
 
 
 

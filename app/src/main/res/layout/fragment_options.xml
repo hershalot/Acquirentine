@@ -8,7 +8,7 @@
 
     <RelativeLayout
         android:id="@+id/alpha_view"
-        android:background="@color/darkGray"
+        android:background="@color/textBackgroundColor"
         android:alpha="0.9"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
@@ -18,15 +18,29 @@
         android:id="@+id/buysell_cost"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignTop="@id/close_popup"
         android:layout_alignBottom="@id/close_popup"
-        android:layout_marginBottom="5dp"
+        android:gravity="center_vertical"
         android:textSize="20sp"
         android:layout_marginEnd="20dp"
-        android:textColor="@color/white"
+        android:textColor="@color/textColor"
         android:textStyle="bold"
-        android:layout_marginTop="10dp"
         android:layout_alignStart="@id/buy_layout"
-        android:text="Buy/Sell: "
+        android:text="@string/buy_sell"
+        />
+
+    <Button
+        android:id="@+id/close_popup"
+        android:layout_marginTop="15dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/textColor"
+        android:layout_alignParentTop="true"
+        android:layout_alignEnd="@+id/buy_layout"
+        style="@style/Widget.AppCompat.Button.Borderless.Colored"
+        android:text="@string/close"
+        android:textAllCaps="false"
+
         />
 
 
@@ -34,27 +48,27 @@
         android:layout_marginStart="30dp"
         android:layout_marginEnd="30dp"
         android:padding="5dp"
-        android:background="@drawable/rounded_background_rectangle_bordered"
+        android:background="@drawable/rounded_background_rectangle"
         android:layout_width="match_parent"
         android:orientation="vertical"
         android:layout_marginTop="50dp"
         android:id="@+id/trade_layout"
-        android:layout_alignParentTop="true"
+        android:layout_below="@+id/close_popup"
         android:layout_centerHorizontal="true"
         android:layout_height="wrap_content">
 
 
         <LinearLayout
+            android:layout_margin="5dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 
             <TextView
-
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="10dp"
                 android:textSize="22sp"
-                android:text="Trade "
+                android:text="@string/trade"
                 />
 
             <TextView
@@ -86,7 +100,7 @@
                     android:layout_width="50dp"
                     android:layout_height="wrap_content"
                     android:textSize="20sp"
-                    android:text="+"
+                    android:text="@string/plus_add"
                     />
 
 
@@ -97,15 +111,16 @@
                     android:textAlignment="center"
                     android:inputType="number"
                     android:layout_gravity="center_horizontal"
-                    android:text="0"
-                    />
+                    android:text="@string/_0"
+                    android:textColor="@color/textColor"
+                    android:autofillHints="" />
 
                 <Button
                     android:id="@+id/trade_dec_btn"
                     android:layout_width="50dp"
                     android:layout_height="wrap_content"
                     android:textSize="20sp"
-                    android:text="-"
+                    android:text="@string/subtract_minus"
                     android:padding="0dp"
                     />
 
@@ -119,19 +134,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text= "For "
+                android:text= "@string/for_trade"
                 android:layout_marginStart="15dp"
                 android:layout_marginEnd="15dp"
                 />
 
-
-            <Spinner
-                android:id="@+id/trade_spinner"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-
-                />
 
         </LinearLayout>
 
@@ -142,38 +149,38 @@
             android:layout_height="wrap_content"
             android:textAllCaps="false"
             android:layout_gravity="end"
-            android:text="Trade"
+            android:text="@string/trade"
             android:textStyle="bold"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:textColor="@color/boltColor"
+            android:background="@drawable/rounded_orange_rectangle"
+            android:textColor="@color/white"
             />
+
     </LinearLayout>
+
 
     <LinearLayout
         android:layout_marginStart="30dp"
         android:layout_marginEnd="30dp"
-
         android:padding="5dp"
         android:layout_width="match_parent"
         android:orientation="vertical"
         android:id="@+id/buy_layout"
         android:layout_below="@+id/sell_layout"
         android:layout_centerHorizontal="true"
-        android:background="@drawable/rounded_background_rectangle_bordered"
+        android:background="@drawable/rounded_background_rectangle"
         android:layout_height="wrap_content">
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 
-
             <TextView
-
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textSize="22sp"
+
                 android:layout_marginEnd="10dp"
-                android:text=" Buy "
+                android:text="@string/buy"
                 />
 
             <TextView
@@ -198,7 +205,7 @@
                 android:layout_width="50dp"
                 android:layout_height="wrap_content"
                 android:textSize="20sp"
-                android:text="-"
+                android:text="@string/subtract_minus"
                 android:padding="0dp"
                 android:layout_gravity="center_vertical"
                 />
@@ -209,8 +216,9 @@
                 android:layout_height="wrap_content"
                 android:textAlignment="center"
                 android:layout_gravity="center_horizontal"
+                android:textColor="@color/textColor"
                 android:inputType="number"
-                android:text="0"
+                android:text="@string/_0"
                 />
 
 
@@ -219,7 +227,7 @@
                 android:layout_width="50dp"
                 android:layout_height="wrap_content"
                 android:textSize="20sp"
-                android:text="+"
+                android:text="@string/plus_add"
                 android:padding="0dp"
                 android:layout_marginStart="10dp"
                 android:layout_gravity="center_vertical"
@@ -234,10 +242,10 @@
             android:layout_height="wrap_content"
             android:textAllCaps="false"
             android:layout_gravity="end"
-            android:text="Buy"
+            android:text="@string/buy"
             android:textStyle="bold"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:textColor="@color/etchColor"
+            android:background="@drawable/rounded_green_rectangle"
+            android:textColor="@color/white"
             />
     </LinearLayout>
 
@@ -250,13 +258,14 @@
         android:id="@+id/sell_layout"
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp"
-        android:background="@drawable/rounded_background_rectangle_bordered"
+        android:background="@drawable/rounded_background_rectangle"
         android:layout_below="@+id/trade_layout"
         android:layout_centerHorizontal="true"
         android:layout_height="wrap_content">
 
 
         <LinearLayout
+            android:layout_margin="5dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
 
@@ -266,7 +275,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="22sp"
                 android:layout_marginEnd="10dp"
-                android:text=" Sell "
+                android:text="@string/sell"
                 />
 
             <TextView
@@ -289,7 +298,7 @@
                 android:layout_width="50dp"
                 android:layout_height="wrap_content"
                 android:textSize="20sp"
-                android:text="-"
+                android:text="@string/subtract_minus"
                 android:padding="0dp"
                 android:layout_gravity="center_vertical"
                 />
@@ -301,9 +310,10 @@
                 android:layout_height="wrap_content"
                 android:textAlignment="center"
                 android:inputType="number"
+                android:textColor="@color/textColor"
                 android:layout_gravity="center_horizontal"
-                android:text="0"
-                />
+                android:text="@string/_0"
+                android:autofillHints="" />
 
             <Button
                 android:id="@+id/sell_inc_btn"
@@ -311,7 +321,7 @@
                 android:layout_height="wrap_content"
                 android:textSize="20sp"
                 android:layout_marginStart="10dp"
-                android:text="+"
+                android:text="@string/plus_add"
                 android:layout_gravity="center_vertical"
                 />
 
@@ -327,28 +337,16 @@
             android:layout_height="wrap_content"
             android:textAllCaps="false"
             android:layout_gravity="end"
-            android:text="Sell"
+            android:text="@string/sell"
             android:textStyle="bold"
+            android:background="@drawable/rounded_red_rectangle"
             style="@style/Widget.AppCompat.Button.Borderless"
-            android:textColor="@color/sparkColor"
+            android:textColor="@color/white"
             />
     </LinearLayout>
 
 
 
-    <Button
-        android:id="@+id/close_popup"
-        android:layout_marginTop="15dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/textColor"
-        android:layout_below="@+id/buy_layout"
-        android:layout_alignEnd="@+id/buy_layout"
-        android:background="@drawable/rounded_white_rectangle_bordered"
-        android:text="Close"
-        android:textAllCaps="false"
-
-        />
 
 
 

@@ -6,6 +6,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 
@@ -14,20 +16,18 @@ import java.util.List;
 public class GamesItemAdapter extends RecyclerView.Adapter<GamesItemAdapter.ViewHolder> {
 
 
-    private int selected_position = RecyclerView.NO_POSITION;
-
-
     private OnGameClickListener onClickListener;
 
 
     // Usually involves inflating a layout from XML and returning the holder
+    @NonNull
     @Override
     public GamesItemAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
 
         mContext = parent.getContext();
         View itemView = LayoutInflater.from(mContext).inflate(R.layout.item_games, parent, false);
-        return new GamesItemAdapter.ViewHolder(itemView);
+        return new ViewHolder(itemView);
 
 
     }
@@ -42,6 +42,7 @@ public class GamesItemAdapter extends RecyclerView.Adapter<GamesItemAdapter.View
         // Get the data model based on position
         GameObject game = mGames.get(position);
 
+        int selected_position = RecyclerView.NO_POSITION;
         holder.itemView.setSelected(selected_position == position);
 
 
@@ -57,13 +58,6 @@ public class GamesItemAdapter extends RecyclerView.Adapter<GamesItemAdapter.View
         }
 
         lobbyPreview.setText(s);
-
-
-        if(game.gameStarted){
-            holder.itemView.setBackground(getContext().getDrawable(R.drawable.rounded_red_rectangle_bordered));
-        }else{
-            holder.itemView.setBackground(getContext().getDrawable(R.drawable.rounded_white_rectangle_bordered));
-        }
 
         holder.bind(game, onClickListener);
 
@@ -96,7 +90,7 @@ public class GamesItemAdapter extends RecyclerView.Adapter<GamesItemAdapter.View
 
     // Provide a direct reference to each of the views within a data item
     // Used to cache the views within the item layout for fast access
-    public class ViewHolder extends RecyclerView.ViewHolder{
+    public static class ViewHolder extends RecyclerView.ViewHolder{
 
 
 //      public ImageButton messageButton;

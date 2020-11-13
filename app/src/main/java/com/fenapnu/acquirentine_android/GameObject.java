@@ -2,6 +2,7 @@ package com.fenapnu.acquirentine_android;
 
 
 
+import android.app.Application;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -29,13 +30,8 @@ import java.util.Set;
 
 public class GameObject {
 
-
-
-
     //Informational Data, this is for the Function to know to run the update
-    long updateType = 0;
-
-
+//    long updateType = 0;
 
 
     String  gameId = "";
@@ -48,10 +44,10 @@ public class GameObject {
     Map<String, List<String>> liveCorporations = new HashMap<>();
 
     //this is held specifically and uniquely to calculate sell costs after a merger. Should only be manipulated by functions, unless writing by client on corporation start
-    Map<String, Long> corpSizeValues = new HashMap<>();
+//    Map<String, Long> corpSizeValues = new HashMap<>();
 
     OnTileActionListener mListener;
-    List<List<String>> adjacentStarters = new ArrayList<>();
+//    List<List<String>> adjacentStarters = new ArrayList<>();
 
     Map<String, Object> mergerData = new HashMap<>();
 
@@ -72,16 +68,23 @@ public class GameObject {
     List<String> totalBoard = new ArrayList<>() ;
     List<String> corporationNames = new ArrayList<>();
 
+
+    Map<String, Object> turnData = new HashMap<>();
+
+
     int maxRowSize = 11;
     int buysellCollumn = 3;
+
     int primaryCollumn = 4;
     int secondaryCollumn = 5;
     int tertiaryCollumn = 6;
+
     Long[][] moneyGrid = new Long[maxRowSize][7];
 
     final int TIER1_CORP = 0;
     final int TIER2_CORP = 1;
     final int TIER3_CORP = 2;
+
     final String TAG = "Game Object";
 
 
@@ -99,7 +102,7 @@ public class GameObject {
         moneyGrid[6] = new Long[] {(long)27, (long)17, (long)7, (long)800, (long)8000, (long)5700, (long)4000};
         moneyGrid[7] = new Long[] {(long)37, (long)27, (long)17, (long)900, (long)9000, (long)6200, (long)4500};
         moneyGrid[8] = new Long[] {(long)100, (long)37, (long)27, (long)1000, (long)10000, (long)7000, (long)5000};
-        moneyGrid[9] = new Long[] {(long)100, (long)100, (long)37,(long)1100, (long)1100, (long)11000, (long)7700, (long)5500};
+        moneyGrid[9] = new Long[] {(long)100, (long)100, (long)37, (long)1100,  (long)11000, (long)7700, (long)5500};
         moneyGrid[10] = new Long[] {(long)100, (long)100, (long)100, (long)1200, (long)12000, (long)8200, (long)6000};
 
         totalBoard.addAll(grid);
@@ -110,15 +113,7 @@ public class GameObject {
         cards = new HashMap<>();
         players = new HashMap<>();
         playerOrder = new ArrayList<>();
-
-        corpSizeValues.put(Corporation.SPARK.label, (long)0);
-        corpSizeValues.put(Corporation.NESTOR.label, (long)0);
-        corpSizeValues.put(Corporation.ROVE.label, (long)0);
-        corpSizeValues.put(Corporation.FLEET.label, (long)0);
-        corpSizeValues.put(Corporation.ETCH.label, (long)0);
-        corpSizeValues.put(Corporation.BOLT.label, (long)0);
-        corpSizeValues.put(Corporation.ECHO.label, (long)0);
-
+        turnData = initTurnData(false);
 
         long DEFAULT_STOCK_COUNT = 24;
 
@@ -201,34 +196,36 @@ public class GameObject {
         this.discardedTile = discardedTile;
     }
 
-    public void setAdjacentStarters(List<List<String>> adjacentStarters) {
-        this.adjacentStarters = adjacentStarters;
+    public void setTurnData(Map<String, Object> turnData) {
+        this.turnData = turnData;
     }
 
     public void setFinalPayoutsComplete(boolean finalPayoutsComplete) {
         this.finalPayoutsComplete = finalPayoutsComplete;
     }
 
-    public void setUpdateType(long updateType) {
-        this.updateType = updateType;
-    }
-
-    public void setCorpSizeValues(Map<String, Long> corpSizeValues) {
-        this.corpSizeValues = corpSizeValues;
-    }
+//    public void setUpdateType(long updateType) {
+//        this.updateType = updateType;
+//    }
 
     public void setTurn(String turn) {
         this.turn = turn;
     }
 
-    public long getUpdateType() {
-        return updateType;
-    }
 
+
+
+
+
+//    public long getUpdateType() {
+//        return updateType;
+//    }
 
     public boolean isMergeRound() {
         return mergeRound;
     }
+
+    public Map<String, Object> getTurnData() { return turnData; }
 
     public Map<String, Object> getMergerData() {
         return mergerData;
@@ -238,16 +235,9 @@ public class GameObject {
         return turn;
     }
 
-    public Map<String, Long> getCorpSizeValues() {
-        return corpSizeValues;
-    }
 
     public boolean isFinalPayoutsComplete() {
         return finalPayoutsComplete;
-    }
-
-    public List<List<String>> getAdjacentStarters() {
-        return adjacentStarters;
     }
 
     public String getLastTilePlayed() {
@@ -335,6 +325,7 @@ public class GameObject {
 
     public Player addPlayer(String currentUid, String name ){
 
+
         String tile = drawStartTile();
         Player currentPlayer = new Player(currentUid, tile, name);
 
@@ -360,9 +351,9 @@ public class GameObject {
         Map<String, Object> endgame = new HashMap<>();
         endgame.put("gameComplete", true);
         endgame.put("searchable", false);
-        endgame.put("updateType", 0);
 
         DataManager.activeGamesPath().document(gameId).update(endgame);
+
     }
 
 
@@ -370,6 +361,7 @@ public class GameObject {
 
 
     public void removePlayer(String userId, String startTile){
+
 
         String fieldString = "players." + userId;
         String tileString = "tiles." + startTile;
@@ -381,7 +373,6 @@ public class GameObject {
         Map<String, Object> removePlayer = new HashMap<>();
         removePlayer.put(fieldString, FieldValue.delete());
         removePlayer.put("playerOrder", playerOrder);
-        removePlayer.put("updateType", 0);
         String s = "tiles." + startTile;
         removePlayer.put(s,  (long) 1);
 
@@ -390,6 +381,23 @@ public class GameObject {
 
 
 
+
+
+    public void removeTileFromHand(String tile, Player player){
+
+        String playerUpdateString = "players." + player.getUserId() + ".tiles";
+
+        int pos = player.getTiles().indexOf(tile);
+        player.getTiles().set(pos, "");
+
+        lastTilePlayed = tile;
+
+        Map<String, Object> tilePlayed = new HashMap<>();
+        tilePlayed.put("lastTilePlayed", tile);
+        tilePlayed.put(playerUpdateString, player.getTiles());
+
+        DataManager.activeGamesPath().document(gameId).update(tilePlayed);
+    }
 
 
 
@@ -414,11 +422,28 @@ public class GameObject {
         String mainPileDelete = "tiles." + tile;
         tilePlayed.put(mainPileDelete,FieldValue.delete());
         tilePlayed.put("moveDescription", s);
-        tilePlayed.put("updateType", 0);
+//        tilePlayed.put("updateType", 0);
+
+        tilePlayed.put("turnData", initTurnData(true));
 
         DataManager.activeGamesPath().document(gameId).update(tilePlayed);
+    }
+
+
+    public Map<String, Object> initTurnData(boolean played){
+
+        Map<String, Object> td = new HashMap<>();
+        td.put("tilePlayed", played);
+        td.put("buys",0);
+        td.put("buy1", "");
+        td.put("buy2", "");
+        td.put("buy3", "");
+
+        return td;
 
     }
+
+
 
 
 
@@ -463,7 +488,7 @@ public class GameObject {
         Map<String, Object> toRemove = new HashMap<>();
         toRemove.put(tileUpdateString, FieldValue.delete());
         toRemove.put("gameId", gameId);
-        toRemove.put("updateType",0);
+//        toRemove.put("updateType",0);
         DataManager.activeGamesPath().document(gameId).update(toRemove);
 
     }
@@ -480,11 +505,6 @@ public class GameObject {
 
         Map<String, Object> toDiscard = new HashMap<>();
 
-//        Map<String, Object> o = players.get()
-//        Player p = new Player(o);
-//        players.put(player.getUserId(), p);
-//        discarded.put(tile, (long)1);
-
         player.tiles.set(pos, "");
         String playerUpdateString = "players." + player.getUserId() + ".tiles";
         toDiscard.put(playerUpdateString, player.getTiles());
@@ -492,7 +512,7 @@ public class GameObject {
 
         String discardPath = "discarded." + tile;
         toDiscard.put(discardPath, 1);
-        toDiscard.put("updateType", 0);
+//        toDiscard.put("updateType", 0);
 
         ref.update(toDiscard);
         mListener.onTileDiscarded(tile, pos);
@@ -512,10 +532,11 @@ public class GameObject {
         add.put(tileUpdateString, FieldValue.delete());
         player.tiles.set(pos, tile);
         add.put(playerUpdateString, player.getTiles());
-        add.put("updateType", 0);
+//        add.put("updateType", 0);
         DataManager.activeGamesPath().document(gameId).update(add);
 
     }
+
 
 
 
@@ -526,17 +547,26 @@ public class GameObject {
         String sPlayerRemoving = "players." + player.getUserId() + ".cards." + underCorp;
         String sPlayerGaining = "players." + player.getUserId() + ".cards." + remainingCorp;
 
+        String sBankGain = "cards." + underCorp;
+        String sBankRemoving = "cards." + remainingCorp;
+
         long newCountPlayerRemove = player.getCards().get(underCorp) - number;
         long newCountPlayerGain = player.getCards().get(remainingCorp) + halfNumber;
 
+        long newCountBankGain = this.getCards().get(underCorp) + number;
+        long newCountBankRemove = this.getCards().get(remainingCorp) - halfNumber;
+
 
         Map<String, Object> bankUpdate = new HashMap<>();
+
         bankUpdate.put(sPlayerRemoving,newCountPlayerRemove);
         bankUpdate.put(sPlayerGaining,newCountPlayerGain);
+        bankUpdate.put(sBankRemoving,newCountBankRemove);
+        bankUpdate.put(sBankGain, newCountBankGain);
 
         String s = player.getName() + " traded " + number + " " + underCorp + " for " + halfNumber + " " + remainingCorp;
         bankUpdate.put("moveDescription", s);
-        bankUpdate.put("updateType", 1);
+//        bankUpdate.put("updateType", 1);
         DataManager.activeGamesPath().document(gameId).update(bankUpdate);
     }
 
@@ -550,17 +580,21 @@ public class GameObject {
 
         String moneyPath = "players." + player.getUserId() + ".money";
         String sPlayer = "players." + player.getUserId() + ".cards." + corporation;
+        String sBank = "cards." + corporation;
 
         long newCountPlayer = player.getCards().get(corporation) - number;
+        long newBankCount = this.getCards().get(corporation) + number;
+
         long newMoney = player.money + paid;
 
         Map<String, Object> bankUpdate = new HashMap<>();
         bankUpdate.put(moneyPath, newMoney);
+        bankUpdate.put(sBank, newBankCount);
         bankUpdate.put(sPlayer,newCountPlayer);
 
         String s = player.getName() + " sold " + number + " " + corporation;
         bankUpdate.put("moveDescription", s);
-        bankUpdate.put("updateType", 1);
+//        bankUpdate.put("updateType", 1);
 
         DataManager.activeGamesPath().document(gameId).update(bankUpdate);
 
@@ -568,40 +602,116 @@ public class GameObject {
 
 
 
-    //sell cards after merger
+    //buy cards
     public void buy(long number,  Player player, String corporation){
 
         if(liveCorporations.get(corporation) == null){
             return;
         }
+
+        if(this.turn.equals(player.getUserId()) && (long) this.turnData.get("buys") + number > 3){
+            Toast.makeText(MyApplication.getContext(), "Slow down, chief", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         long payment = determineCost(corporation, number);
 
         String moneyPath = "players." + player.getUserId() + ".money";
         String sPlayer = "players." + player.userId + ".cards." + corporation;
+        String sBank = "cards." + corporation;
 
         long newMoney = 0;
         if(player.money - payment >= 0){
-
             newMoney = player.money - payment;
-
         }else{
+            Toast.makeText(MyApplication.getContext(), "This isn't a charity", Toast.LENGTH_SHORT).show();
             return;
         }
 
+
         long newCountPlayer = player.getCards().get(corporation) + number;
+        long newCountBank = this.getCards().get(corporation) - number;
 
         Map<String, Object> bankUpdate = new HashMap<>();
+
         bankUpdate.put(sPlayer,newCountPlayer);
+        bankUpdate.put(sBank, newCountBank);
         bankUpdate.put(moneyPath, newMoney);
 
         String s = player.getName() + " buys " + number + " " + corporation;
         bankUpdate.put("moveDescription", s);
-        bankUpdate.put("updateType", 1);
+//        bankUpdate.put("updateType", 1);
 
 
-        DataManager.activeGamesPath().document(gameId).update(bankUpdate);
+
+        checkAndSubmitBuyData(player, bankUpdate, number, corporation);
 
     }
+
+
+
+
+
+    private void checkAndSubmitBuyData(Player player, Map<String, Object> updates, long number, String corp){
+
+        long totalPurchases = 0;
+        totalPurchases = (long) this.getTurnData().get("buys");
+
+
+        if(this.getTurn().equals(player.getUserId()) && totalPurchases < 4){
+
+            String turnBuysPath = "turnData.buys";
+
+            switch ((int) totalPurchases) {
+                case 0:
+
+                    if(number > 3){return;}
+
+                    String turnBuy1Path = "turnData.buy1";
+                    updates.put(turnBuysPath, number);
+                    String s = player.getName() + " buys " + number + " " + corp;
+                    updates.put(turnBuy1Path, s);
+
+                    break;
+                case 1:
+
+                    if(number > 2){ return; }
+
+                    String turnBuy2Path = "turnData.buy2";
+                    updates.put(turnBuysPath, number + 1);
+                    String st = player.getName() + " buys " + number + " " + corp;
+                    updates.put(turnBuy2Path, st);
+
+                    break;
+
+                case 2:
+                    if(number > 1){ return; }
+
+                    String turnBuy3Path = "turnData.buy3";
+                    updates.put(turnBuysPath, number + 2);
+                    String str = player.getName() + " buys " + number + " " + corp;
+                    updates.put(turnBuy3Path, str);
+
+                    break;
+            }
+
+
+            DataManager.activeGamesPath().document(gameId).update(updates);
+
+        }else{
+
+            Toast.makeText(MyApplication.get(), "Not enough buys Remaining", Toast.LENGTH_SHORT);
+        }
+
+
+
+    }
+
+
+
+
+
+
 
 
     //Starts the Game
@@ -617,6 +727,7 @@ public class GameObject {
         start.put("moveDescription", "Game Started");
         start.put("liveCorporations", new HashMap<>());
 
+
         setInitialTiles();
 
         for(Player p : players.values()){
@@ -625,10 +736,12 @@ public class GameObject {
 
         }
         start.put("tiles", tiles);
-        start.put("updateType", 0);
+//        start.put("updateType", 0);
+
 
         String firstPlayer = determineFirstPlayerAndOrder();
         start.put("turn",  firstPlayer);
+
 
         DataManager.activeGamesPath().document(gameId).update(start);
 
@@ -654,11 +767,11 @@ public class GameObject {
 
 
     //Determines who goes first based on the start tile
-    public String determineFirstPlayerAndOrder(){
+    public String determineFirstPlayerAndOrder() {
 
         String firstUid = "";
         int first = 100;
-        for(Player p : players.values()){
+        for (Player p : players.values()) {
 
             String startTile = p.startTile;
             int pos = totalBoard.indexOf(startTile);
@@ -670,95 +783,6 @@ public class GameObject {
 
         return firstUid;
     }
-
-
-
-//NOT NECESSARY ANYMORE now that TURN MANAGEMENT IS IMPLEMENTED
-//    public void drawRandomTileAsyncTransaction(final String uid, final boolean isStartTile, final int pos, final String name){
-//
-//        FirebaseFirestore db = FirebaseFirestore.getInstance();
-//        final DocumentReference ref = DataManager.activeGamesPath().document(getGameId());
-//
-//        db.runTransaction(new Transaction.Function<String>() {
-//            @Override
-//            public String apply(Transaction transaction) throws FirebaseFirestoreException {
-//                DocumentSnapshot snapshot = transaction.get(ref);
-//
-//                setTiles((Map<String, Long>) snapshot.get("tiles"));
-//
-//
-//                Object[] ot =  getTiles().keySet().toArray();
-//                String tile = (String) ot[new Random().nextInt(ot.length)];
-//
-//                Map<String, Map<String, Object>> ps = (Map<String, Map<String, Object>>) snapshot.get("players");
-//
-//
-//                Map<String, Object> updates = new HashMap<>();
-//                updates.put("updateType",0);
-//                String tileUpdateString = "tiles." + tile;
-//                String playerTileUpdateString = "";
-//
-//                if(isStartTile){
-//
-//                    //if start tile, we need to create the player here
-//                    List<String> starter = evaluateAdjacentTiles(tile);
-//                    if(starter.get(0).equals("starter")){
-//                        //it's a starter piece that won't start anything. Add to adjacentStarters to be added to
-//                        starter.remove(0);
-//                    }
-//
-//                    Player currentPlayer = new Player(uid, tile, name);
-//                    currentPlayer.setStartTile(tile);
-//
-//                    String fieldString = "players." + uid;
-//
-//                    updates.put(fieldString, currentPlayer.toDictionary());
-//                    updates.put("playerOrder", FieldValue.arrayUnion(uid));
-//
-//
-//                }else{
-//
-//                    Map<String, Object> o = ps.get(uid);
-//
-//                    Player p = new Player(o);
-//                    players.put(uid, p);
-//
-//                    playerTileUpdateString = "players." + uid + ".tiles";
-//                    //add tile to hand or startTile
-//                    List<String> allTiles = new ArrayList<>(p.getTiles());
-//
-//                    String t = allTiles.get(pos);
-//                    if(t.equals("")){
-//                        p.getTiles().set(pos, tile);
-//                    }
-//
-//                    updates.put(playerTileUpdateString, p.getTiles());
-//                }
-//
-//                //delete tile from main pile
-//                updates.put(tileUpdateString, FieldValue.delete());
-//
-//                transaction.update(ref, updates);
-//
-//                // Success
-//                return tile;
-//            }
-//        }).addOnSuccessListener(new OnSuccessListener<String>() {
-//            @Override
-//            public void onSuccess(String tile) {
-//                mListener.onTileDrawn(tile, pos);
-//                Log.d(TAG, "Transaction success!");
-//            }
-//        }).addOnFailureListener(new OnFailureListener() {
-//            @Override
-//            public void onFailure(@NonNull Exception e) {
-//                Log.w(TAG, "Transaction failure.", e);
-//            }
-//        });
-//    }
-
-
-
 
 
 
@@ -781,10 +805,11 @@ public class GameObject {
 
         long size = 0;
         if(liveCorporations.get(corp) == null){
-            size = corpSizeValues.get(corp);
+            size = (long) getMergerData().get(corp);
         }else{
             size = liveCorporations.get(corp).size();
         }
+
 
 
         int tier = determinCorporationTier(corp);
@@ -793,6 +818,16 @@ public class GameObject {
         return moneyGrid[row][buysellCollumn];
     }
 
+
+    //get the cost per unit of an active corporation
+    public long getCostPerUnitWith(String corp, long size){
+
+
+        int tier = determinCorporationTier(corp);
+        int row = determineRow(tier, size);
+
+        return moneyGrid[row][buysellCollumn];
+    }
 
 
     //return cost of corporation based on the number desired
@@ -806,6 +841,18 @@ public class GameObject {
 
 
 
+    //return cost of corporation based on the number desired
+    public long determineCostPostMerger(String corp, long preMergerSize , long number){
+
+        long unitCost = getCostPerUnitWith(corp, preMergerSize);
+
+        return unitCost * number;
+    }
+
+
+
+
+
     //Each Corporation has a static Tier for the money grid. Return that here
     public int determinCorporationTier (String corporation){
 
@@ -814,12 +861,12 @@ public class GameObject {
         if(corporation.equals(Corporation.ROVE.label) || corporation.equals(Corporation.FLEET.label) || corporation.equals(Corporation.ETCH.label)){
 
             tier = TIER2_CORP;
+
         }else if(corporation.equals(Corporation.BOLT.label) || corporation.equals(Corporation.ECHO.label)){
 
             tier = TIER3_CORP;
 
         }
-
         return tier;
     }
 
@@ -960,22 +1007,28 @@ public class GameObject {
 
         if(count > 0){
 
-            //gift player a free card
+            //gift player a free card ONLY if any remain
             long usercards = player.getCards().get(starting) + 1;
             String userString = "players." + player.getUserId() + ".cards." + starting;
             updates.put(userString, usercards);
+
+            String bankPath = "cards." + starting;
+            long bankCount = this.getCards().get(starting) - 1;
+            updates.put(bankPath,bankCount);
         }
+
 
         String s = player.getName() + " started " + starting;
         updates.put("moveDescription", s);
-        updates.put("updateType", 1);
 
         this.getLiveCorporations().put(starting, tiles);
+
+        updates.put("turnData", initTurnData(true));
 
         updates.put(startingCorpPath, tiles);
         DataManager.activeGamesPath().document(gameId).update(updates);
 
-//        evaluateExistingTilesOnStarter(starting);
+        evaluateExistingTilesOnStarter(starting);
 
     }
 
@@ -994,10 +1047,11 @@ public class GameObject {
 
         tilePlayed.put("lastTilePlayed", tile);
         tilePlayed.put(playerUpdateString, player.getTiles());
+        tilePlayed.put("turnData", initTurnData(true));
 
         String s = player.getName() + " played tile " + tile;
+
         tilePlayed.put("moveDescription", s);
-        tilePlayed.put("updateType", 1);
 
         String corpPath = "liveCorporations." + corp;
         this.getLiveCorporations().get(corp).addAll(tiles);
@@ -1022,6 +1076,7 @@ public class GameObject {
 
         //determine payouts here
         Map<String, Long> payouts = new HashMap<>();
+        Map<String, Object> mergeData = new HashMap<>();
 
         //for each corporation involved
         for(String s : involved){
@@ -1043,15 +1098,14 @@ public class GameObject {
                     }
                 }
 
-
                 List<String> underCorp = getLiveCorporations().get(s);
+
+                mergeData.put(s, underCorp.size());
                 winningTileArray.addAll(underCorp);
                 this.getLiveCorporations().remove(s);
             }
         }
         winningTileArray.addAll(newTiles);
-
-
 
         Map<String, Object> tilePlayed = new HashMap<>();
         String playerUpdateString = "players." + player.getUserId() + ".tiles";
@@ -1068,10 +1122,8 @@ public class GameObject {
         tilePlayed.put("moveDescription", s);
 
         tilePlayed.put("liveCorporations", getLiveCorporations());
-        tilePlayed.put("updateType", 0);
         tilePlayed.put("mergeRound", true);
 
-        Map<String, Object> mergeData = new HashMap<>();
 
         for(String usrid : payouts.keySet()){
 
@@ -1085,17 +1137,49 @@ public class GameObject {
         }
 
         //add the remaining users who didn't get payouts
-        for(String uid : playerOrder){
-            if(tilePlayed.get(uid) == null){
-                mergeData.put(uid, 0);
+//        for(String uid : playerOrder){
+//            if(tilePlayed.get(uid) == null){
+//                mergeData.put(uid, 0);
+//            }
+//        }
+
+
+
+
+        List<String> unders = new ArrayList<>(involved);
+        unders.remove(winner);
+        List<Integer> counts = new ArrayList<>();
+
+        Map<String, Object> cards = new HashMap<>();
+
+        for(String str : unders){
+            counts.add((int) mergeData.get(str));
+
+            Map<String, Object> corpCounts = new HashMap<>();
+
+            for(String id : playerOrder){
+
+                Player p = players.get(id);
+                long num = 0;
+                if(p.cards != null && p.cards.get(str) != null){
+                    num = p.cards.get(str);
+                }
+
+                corpCounts.put(id, num);
             }
+
+            cards.put(str, corpCounts);
         }
 
+        unders.sort(Comparator.comparingInt(counts::indexOf));
 
-        mergeData.put("corporations", involved);
+        mergeData.put("corporations", unders);
+        mergeData.put("turnsTaken", 0);
         mergeData.put("winner", winner);
+        mergeData.put("cards", cards);
 
         tilePlayed.put("mergeData", mergeData);
+        tilePlayed.put("turnData", initTurnData(true));
 
         DataManager.activeGamesPath().document(gameId).update(tilePlayed);
     }
@@ -1121,13 +1205,22 @@ public class GameObject {
 
 
 
+
+
     //This needs to aggregate the list of payouts for the corporation passed as a parameter
     public Map<String, Long> determinePayouts(String corporation){
 
         //First need to start by determining who is first second and third. If there is a tie, etc
-
         int tier = determinCorporationTier(corporation);
-        int size = getLiveCorporations().get(corporation).size();
+
+        int size = 0;
+        if(getLiveCorporations().get(corporation) != null){
+            size = getLiveCorporations().get(corporation).size();
+        }else {
+
+            long l = (long) getMergerData().get(corporation);
+            size = Math.toIntExact(l);
+        }
 
         int row =  determineRow(tier, size);
 
@@ -1149,6 +1242,7 @@ public class GameObject {
         //Sort array from largest to smallest
         countsArray = sortPayoutArray(countsArray);
 
+
         long primarySize = 1;
         long secondarySize = 1;
         long tertiarySize = 1;
@@ -1157,13 +1251,13 @@ public class GameObject {
         Map<String, Long> secondary = new HashMap<>();
         Map<String, Long> tertiary = new HashMap<>();
 
+
         //since counts array is sorted from largest to smallest we can iterate and easily get the payouts sorted
         for(int i = 0; i<countsArray.size(); i++){
 
             Map<String, Long> data =  countsArray.get(i);
             Set<String> tmp = data.keySet();
-            List<String> keys = new ArrayList<>();
-            keys.addAll(tmp);
+            List<String> keys = new ArrayList<>(tmp);
 
             String key = keys.get(0);
             long count = countsArray.get(i).get(key);
@@ -1253,16 +1347,183 @@ public class GameObject {
         }
 
 
+
+        for(Player p: players.values()){
+            if(payouts.get(p.getUserId()) == null){
+                payouts.put(p.getUserId(), (long)0);
+            }
+        }
+
+
+
         //map of user id's and what they get paid
         return payouts;
     }
 
 
 
+
+
+
+
+
+
+    //This needs to aggregate the list of payouts for the corporation passed as a parameter
+    public Map<String, Long> determinePayoutsPostMerge(String corporation){
+
+        //First need to start by determining who is first second and third. If there is a tie, etc
+
+        int tier = determinCorporationTier(corporation);
+
+        long size = 0;
+        if(getMergerData().get(corporation) != null){
+            size = (long) getMergerData().get(corporation);
+        }
+
+        int row =  determineRow(tier, size);
+
+        long primaryPayout = moneyGrid[row][primaryCollumn];
+        long secondaryPayout = moneyGrid[row][secondaryCollumn];
+        long tertiaryPayout = moneyGrid[row][tertiaryCollumn];
+
+        Map<String, Long> payouts = new HashMap<>();
+
+        List<Map<String, Long>> countsArray = new ArrayList<>();
+        Map<String, Map<String, Long>> cards = (Map<String, Map<String, Long>>) mergerData.get("cards");
+
+        Map<String, Long> counts = cards.get(corporation);
+
+        for(String u : counts.keySet()){
+
+            Map<String, Long> entry = new HashMap<>();
+
+            long amount = counts.get(u);
+            entry.put(u, amount);
+
+            countsArray.add(entry);
+        }
+
+
+        //Sort array from largest to smallest
+        countsArray = sortPayoutArray(countsArray);
+
+        long primarySize = 1;
+        long secondarySize = 1;
+        long tertiarySize = 1;
+
+        Map<String, Long> primary = new HashMap<>();
+        Map<String, Long> secondary = new HashMap<>();
+        Map<String, Long> tertiary = new HashMap<>();
+
+        //since counts array is sorted from largest to smallest we can iterate and easily get the payouts sorted
+        for(int i = 0; i<countsArray.size(); i++){
+
+            Map<String, Long> data =  countsArray.get(i);
+            Set<String> tmp = data.keySet();
+            List<String> keys = new ArrayList<>(tmp);
+
+            String key = keys.get(0);
+            long count = countsArray.get(i).get(key);
+
+            if(count > primarySize){
+                //only here for the first
+                primarySize = count;
+                primary.put(key, count);
+
+            }else if(count == primarySize){
+                primary.put(key, count);
+            }else if (count > secondarySize){
+                secondarySize = count;
+                secondary.put(key, count);
+
+            }else if (count == secondarySize){
+                secondary.put(key, count);
+            }else if (count > tertiarySize){
+                tertiarySize = count;
+                tertiary.put(key, count);
+            }else if (count == tertiarySize){
+                tertiary.put(key, count);
+            }
+        }
+
+
+
+        //now we need to determine which payouts go where
+        //if 1 in primary, that's the p
+        if(primary.size() > 2){
+            //split the tiers between these three
+            long portion = roundUp((primaryPayout + secondaryPayout + tertiaryPayout)/ primary.size()) ;
+            for(String s : primary.keySet()){
+                payouts.put(s, portion);
+            }
+        }else if (primary.size() == 2){
+            //split the first and second tier between these two
+            long pPortion = roundUp((primaryPayout + secondaryPayout)/2);
+            for(String s : primary.keySet()){
+                payouts.put(s, pPortion);
+            }
+
+            if(secondary.size() > 1){
+                long sPortion  = roundUp(tertiaryPayout/secondary.size());
+                for(String s : secondary.keySet()){
+                    payouts.put(s, sPortion);
+                }
+            }else if(secondary.size() == 1){
+                for(String s : secondary.keySet()){
+                    payouts.put(s, tertiaryPayout);
+                }
+            }
+
+        }else{
+            //one top payout to primary. THere will always be at lease on primary due to the free card given.
+            for(String s : primary.keySet()){
+                payouts.put(s, primaryPayout);
+            }
+
+            if(secondary.size() > 1){
+                //secondary splits second + tertiary payouts.
+                long sPortion = roundUp((secondaryPayout + tertiaryPayout) / secondary.size());
+                for(String s : secondary.keySet()){
+                    payouts.put(s, sPortion);
+                }
+
+            }else if(secondary.size() == 1){
+                for(String s : secondary.keySet()){
+                    payouts.put(s, secondaryPayout);
+                }
+
+                if(tertiary.size() > 1){
+                    long tPortion = roundUp(( tertiaryPayout / tertiary.size()));
+
+                    for(String s : tertiary.keySet()){
+                        payouts.put(s, tPortion);
+                    }
+
+                }else if(tertiary.size() == 1){
+                    for(String s : tertiary.keySet()){
+                        payouts.put(s, tertiaryPayout);
+                    }
+                }
+            }
+        }
+
+        //now add the people who don't get paid and how many cards they have
+        for(String p: players.keySet()){
+            if(payouts.get(p) == null){
+                payouts.put(p, (long)0);
+            }
+        }
+
+        //map of user id's and what they get paid
+        return payouts;
+    }
+
+
+
+
     private long roundUp(long num){
 
         return ((num + 99) / 100) * 100 ;
-
     }
 
 
@@ -1290,9 +1551,6 @@ public class GameObject {
 
         return players;
     }
-
-
-
 
 
 
@@ -1373,7 +1631,6 @@ public class GameObject {
             adjacent.add(bottom);
         }
 
-
         return adjacent;
     }
 
@@ -1382,23 +1639,21 @@ public class GameObject {
     public void performFinalPayouts(){
 
         //we need to determine each payout for each corp. And add it to the payouts map. Adding to existing entries case
-
         Map<String, Long> payouts = new HashMap<>();
+
         for(String s : liveCorporations.keySet()){
 
             //get the corp payout list
             Map<String, Long> po = determinePayouts(s);
 
-
-
-            for(String str : po.keySet()){
+            for(String str : po.keySet()) {
 
                 long toAdd = po.get(str);
-                if(payouts.get(str) != null){
+                if (payouts.get(str) != null) {
                     //add
                     long existing = payouts.get(str);
-                    payouts.put(str, existing + toAdd );
-                }else{
+                    payouts.put(str, existing + toAdd);
+                } else {
                     payouts.put(str, toAdd);
                 }
             }
@@ -1406,7 +1661,6 @@ public class GameObject {
 
             //get money from selling here
             Map<String, Long> sell = determineCashSellout(s);
-
             for(String st : sell.keySet()){
 
                 long sellAdd = sell.get(st);
@@ -1421,9 +1675,9 @@ public class GameObject {
         }
 
 
+
         Map<String, Object> finalPayoutsToWrite = new HashMap<>();
         finalPayoutsToWrite.put("finalPayoutsComplete", true);
-        finalPayoutsToWrite.put("updateType", 0);;
         finalPayoutsToWrite.put("searchable", false);
         finalPayoutsToWrite.put("gameComplete", true);
 
@@ -1436,10 +1690,11 @@ public class GameObject {
             finalPayoutsToWrite.put(moneyString, newCash);
 
         }
-
         DataManager.activeGamesPath().document(gameId).update(finalPayoutsToWrite);
-
     }
+
+
+
 
     public Map<String, Long> getInitialCards(){
 
@@ -1454,6 +1709,7 @@ public class GameObject {
 
         return cards;
     }
+
 
 
     public boolean canEndGame(){
@@ -1474,7 +1730,6 @@ public class GameObject {
             }else if(corpTiles.size() < 11){
                 allOver11 = false;
             }
-
         }
 
         return allOver11 || over38;
@@ -1491,9 +1746,12 @@ public class GameObject {
             allCorpTiles.addAll(tiles);
         }
 
-
         return allCorpTiles;
     }
+
+
+
+
 
 
 
@@ -1509,8 +1767,37 @@ public class GameObject {
         update.put("turn", newTurn);
 
 
-        DataManager.activeGamesPath().document(gameId).update(update);
+        if(isMergeRound()){
+            //if it's a merge round we need to add this player to the existing merger turn played.
+            List<String> corps = (List<String>) getMergerData().get("corporations");
 
+            long turnsTaken = (long) getMergerData().get("turnsTaken");
+
+            String s = "mergeData.turnsTaken";
+
+            //now check if this is the last merger turn. If the mergerData turnsTaken count is equal to the playerSize plus the number of corporations going under
+            if(turnsTaken >= (playerOrder.size() * corps.size() - 1)){
+                update.put("mergeRound", false);
+
+            }else if (turnsTaken % playerOrder.size() == 0){
+
+                int corppos = (int) turnsTaken / playerOrder.size();
+                update.put("current", corps.get(corppos));
+                turnsTaken = turnsTaken + 1;
+                update.put(s, turnsTaken);
+
+            }else {
+
+                turnsTaken = turnsTaken + 1;
+                update.put(s, turnsTaken);
+            }
+
+        }else {
+            update.put("turnData.buys", 0);
+            update.put("turnData.tilePlayed", false);
+        }
+
+        DataManager.activeGamesPath().document(gameId).update(update);
 
     }
 
@@ -1542,12 +1829,11 @@ public class GameObject {
         }
 
 
+
         if(stragglersToAdd.size() > 0){
             Map<String, Object> updates = new HashMap<>();
 
             String updatePath = "liveCorporations." + corporation;
-
-
             liveCorporations.get(corporation).addAll(stragglersToAdd.keySet());
 
             updates.put(updatePath, liveCorporations.get(corporation));
@@ -1555,7 +1841,6 @@ public class GameObject {
             DataManager.activeGamesPath().document(gameId).update(updates);
             evaluateExistingTilesOnStarter(corporation);
         }
-
 
     }
 

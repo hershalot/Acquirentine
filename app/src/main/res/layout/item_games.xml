@@ -5,7 +5,7 @@
     android:layout_gravity="center_vertical"
     android:gravity="center_vertical"
     android:layout_margin="10dp"
-    android:background="@drawable/rounded_white_rectangle_bordered"
+    android:background="@drawable/rounded_background_rectangle"
     android:layout_height="60dp">
 
 

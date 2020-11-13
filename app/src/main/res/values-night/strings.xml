@@ -3,6 +3,28 @@
     <string name="app_name">Acquarentine</string>
     <string name="shared_preferences_key">shared_preferences_key</string>
     <string name="shared_preferences_user_id">shared_preferences_user_id</string>
+    <string name="close">Close</string>
+    <string name="sell">Sell</string>
+    <string name="plus_add">+</string>
+    <string name="_0">0</string>
+    <string name="subtract_minus">-</string>
+    <string name="buy">Buy</string>
+    <string name="for_trade">For</string>
+    <string name="buy_sell">Buy/Sell:</string>
+    <string name="trade">Trade</string>
+    <string name="game_over">Game Over!</string>
+    <string name="create_game">Create Game</string>
+    <string name="thanks_icons8_com_for_the_free_icons">Thanks icons8.com for the free icons!</string>
+    <string name="no_available_games">No Available Games</string>
+    <string name="available_games">Available Games</string>
+    <string name="enter_name">Enter Name</string>
+    <string name="edit_name_button">Edit name button</string>
+    <string name="your_name">Your Name</string>
+    <string name="start_game">Start Game</string>
+    <string name="draw_tile">Draw Tile</string>
+    <string name="logout">Logout</string>
+    <string name="message_notification_channel_id">message_notification_channel_id</string>
+    <string name="message_notification_channel_name">message_notification_channel_name</string>
 
     <string-array name="corporations_array">
         <item>Selec</item>

@@ -9,17 +9,18 @@ import com.google.gson.Gson;
 
 import static android.content.Context.MODE_PRIVATE;
 
-
-
-
 public class DataManager {
 
 
-
-    /**
+    /***
      Shared Preferences
-     */
+     ***/
 
+    static Long nowInSeconds(){
+
+        long millis = System.currentTimeMillis();
+        return millis / 1000;
+    }
 
 
     static CollectionReference getUsersPath(){
@@ -27,7 +28,15 @@ public class DataManager {
         return FirebaseFirestore.getInstance().collection("Users");
     }
 
+    static CollectionReference getTurnDataPath(String id){
 
+        return activeGamesPath().document(id).collection("TurnData");
+    }
+
+    static CollectionReference activeGamesPath() {
+
+        return FirebaseFirestore.getInstance().collection("ActiveGames");
+    }
 
     public static User getLocalUserObject() {
 
@@ -54,16 +63,6 @@ public class DataManager {
 
 
 
-
-    static CollectionReference activeGamesPath() {
-
-        return FirebaseFirestore.getInstance().collection("ActiveGames");
-    }
-
-    static CollectionReference gameUpdatesPath() {
-
-        return FirebaseFirestore.getInstance().collection("GameUpdates");
-    }
 
 
 

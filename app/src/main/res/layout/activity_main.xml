@@ -1,34 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/backgroundColor"
+    android:background="@color/textBackgroundColor"
     android:layout_gravity="center_horizontal"
     tools:context=".MainActivity">
 
 
     <TextView
+        android:id="@+id/available_games"
         android:textSize="30sp"
-        android:text="Available Games"
+        android:textColor="@color/textColor"
+        android:text="@string/available_games"
         android:layout_marginTop="30dp"
         android:layout_marginStart="15dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
-    <EditText
-        android:id="@+id/name_et"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="text"
-        android:layout_marginTop="100dp"
-        android:hint="Enter Name"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="20dp"
 
-        />
+    <Button
+        android:id="@+id/logout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:text="@string/logout"
+        android:textAllCaps="false"
+        android:layout_alignParentEnd="true"
+        android:layout_alignBottom="@+id/available_games"
+        android:textColor="@color/darkGreen"
+        android:layout_gravity="center"
+         />
+
+
+    <LinearLayout
+        android:id="@+id/name_layout"
+        android:orientation="horizontal"
+        android:layout_below="@+id/available_games"
+        android:layout_width="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="@dimen/nav_margin"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/name_et"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="@string/your_name"
+            android:layout_marginEnd="5dp"
+            android:textColor="@color/textColor"
+            android:layout_gravity="center_vertical"
+            />
+
+        <ImageButton
+            android:id="@+id/change_name_btn"
+            android:src="@drawable/edit_white"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:tint="@color/textColor"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+
+            android:contentDescription="@string/edit_name_button" />
+
+    </LinearLayout>
+
 
     <TextView
         android:id="@+id/no_games_lbl"
@@ -37,10 +73,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_below="@+id/name_et"
+        android:layout_below="@+id/name_layout"
         android:layout_centerHorizontal="true"
         android:textColor="@color/placeholderColor"
-        android:text="No Available Games"/>
+        android:text="@string/no_available_games"/>
 
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -49,7 +85,7 @@
         android:layout_below="@+id/no_games_lbl"
         android:layout_above="@id/create_game"
         android:layout_centerHorizontal="true"
-        android:layout_margin="25dp"
+        android:layout_margin="20dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -68,22 +104,11 @@
         android:layout_height="wrap_content"
         style="@style/Widget.AppCompat.Button.Borderless"
         android:layout_margin="30dp"
-        android:text="Create Game"
-        android:textColor="@color/colorPrimary"
+        android:text="@string/create_game"
+        android:textColor="@color/white"
         android:layout_gravity="center"
-        android:background="@drawable/rounded_grey_rectangle_bordered"
+        android:background="@drawable/rounded_green_rectangle"
         android:layout_alignParentBottom="true" />
-
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_alignParentBottom="true"
-        android:layout_margin="10dp"
-        android:text="Thanks icons8.com for the free icons!"
-        />
-
 
 
 </RelativeLayout>

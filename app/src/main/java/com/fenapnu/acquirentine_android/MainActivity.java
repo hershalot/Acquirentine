@@ -2,50 +2,54 @@ package com.fenapnu.acquirentine_android;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.ContextThemeWrapper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 
-import org.w3c.dom.Text;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements OnGameClickListener, SwipeRefreshLayout.OnRefreshListener {
+public class MainActivity extends AppCompatActivity implements OnGameClickListener, SwipeRefreshLayout.OnRefreshListener, UserSingleton.OnCurrentUserDataChanged {
 
 
 
     public Button createGame;
     public RecyclerView recyclerView;
-    public EditText nameET;
+    public TextView nameTV;
+    public ImageButton changeName;
     private TextView noGamesTV;
 
     private GamesItemAdapter adapter;
@@ -53,107 +57,122 @@ public class MainActivity extends AppCompatActivity implements OnGameClickListen
     private List<GameObject> allGames = new ArrayList<>();
 
     private SwipeRefreshLayout refreshLayout;
-    private User currentUser;
-    private boolean databaseSetting = false;
 
-
-    private ListenerRegistration userListener;
     private ListenerRegistration gameListener;
-    private FirebaseAuth mAuth;
 
     public static Context contextOfApplication;
-    public static Context getContextOfApplication()
-    {
-        return contextOfApplication;
-    }
-
-
-    private String TAG = "MAIN ACTIVITY";
 
 
 
 
+    public void addAuthListener(){
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+        FirebaseAuth.getInstance().addAuthStateListener(new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
 
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                if(firebaseAuth.getCurrentUser() == null){
 
-        if (user == null) {
+                    showLoginActivity();
+                }else{
 
-            // User is not signed in
-            Intent i = new Intent(this, LoginActivity.class);
-            startActivity(i);
-
-        }else{
-            createGame.setEnabled(true);
-            getActiveGames();
-            if(userListener == null){
-                setUserDataListener();
+                    UserSingleton.INSTANCE.setListeners();
+                    getActiveGames();
+                    sendTokenToServer();
+                }
             }
-        }
+        });
+    }
+
+    public void showLoginActivity(){
+
+        Intent i = new Intent(this, LoginActivity.class);
+        startActivity(i);
     }
 
 
+
+    private void sendTokenToServer(){
+
+        if(FirebaseAuth.getInstance().getCurrentUser() == null || FirebaseAuth.getInstance().getUid() == null || FirebaseAuth.getInstance().getUid().equals("")) {
+            return;
+        }
+
+        FirebaseInstanceId.getInstance().getInstanceId()
+                .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+
+                    @Override
+                    public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                        if (!task.isSuccessful()) {
+                            return;
+                        }
+                        // Get new Instance ID token
+                        String token = task.getResult().getToken();
+
+                        if(!token.equals(UserSingleton.INSTANCE.getCurrentUser().getToken()) && FirebaseAuth.getInstance().getUid() != null){
+//                            currentUser.setToken(currentUser.getToken());
+//                            DataManager.setLocalUserObject(currentUser);
+                            Map<String,Object> tokenUpdate = new HashMap<>();
+                            tokenUpdate.put("token",token);
+                            tokenUpdate.put("deviceOS", "android");
+
+                            DataManager.getUsersPath().document(FirebaseAuth.getInstance().getUid()).update(tokenUpdate);
+                        }
+                    }
+                });
+    }
 
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         int currentOrientation = getResources().getConfiguration().orientation;
+
         if (currentOrientation == Configuration.ORIENTATION_LANDSCAPE) {
             // Landscape
             setContentView(R.layout.activity_main_landscape);
-        }
-        else {
+        }else {
             // Portrait
             setContentView(R.layout.activity_main);
         }
 
         contextOfApplication = getApplicationContext();
         createGame = findViewById(R.id.create_game);
-        createGame.setEnabled(false);
-
-        mAuth = FirebaseAuth.getInstance();
-        mAuth.addAuthStateListener(new FirebaseAuth.AuthStateListener() {
+        Button logout = findViewById(R.id.logout);
+        logout.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-
-                if(firebaseAuth.getCurrentUser() != null) {
-
-                    //user is logged in
-                    setUserDataListener();
-                    createGame.setEnabled(true);
-                }else{
-
-                    if(userListener != null){
-                        userListener.remove();
-                    }
-
-                }
+            public void onClick(View v) {
+                handleLogout();
             }
         });
 
-
+        UserSingleton.INSTANCE.setLocalUserDataChangedListener(this);
+        addAuthListener();
 
         createGame = findViewById(R.id.create_game);
         recyclerView = findViewById(R.id.recycler_view);
-        nameET = findViewById(R.id.name_et);
+        nameTV = findViewById(R.id.name_et);
+        changeName = findViewById(R.id.change_name_btn);
         noGamesTV = findViewById(R.id.no_games_lbl);
+
+        changeName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                changeNamePrompt();
+            }
+        });
 
         int VERTICAL_ITEM_SPACE = 25;
         recyclerView.addItemDecoration(new SpacingItemDecoration(VERTICAL_ITEM_SPACE, VERTICAL_ITEM_SPACE));
 
         adapter = new GamesItemAdapter(this, allGames, this);
-        // Attach the adapter to the recyclerview to populate items
 
         // Set layout manager to position the items
         final LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(mLinearLayoutManager);
         recyclerView.setAdapter(adapter);
-
 
         refreshLayout = findViewById(R.id.refresh_layout);
         refreshLayout.setOnRefreshListener(this);
@@ -162,124 +181,116 @@ public class MainActivity extends AppCompatActivity implements OnGameClickListen
                 R.color.reverseInGameColor);
 
         createGame.requestFocus();
-        nameET.clearFocus();
-
-
-
 
         createGame.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                if(currentUser == null){
-
+                if(FirebaseAuth.getInstance().getCurrentUser() == null || UserSingleton.INSTANCE.getCurrentUser().getUid().equals("")){
+                    Toast.makeText(MainActivity.this, "User is null, try logging out and in again.", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                if(nameET.getText().toString().equals("")){
+                if(nameTV.getText().toString().equals("")){
                     Toast.makeText(MainActivity.this, "Enter a Name", Toast.LENGTH_LONG).show();
                     return;
                 }
 
-                Map<String, Object> name = new HashMap<>();
-                name.put("name",nameET.getText().toString());
-                FirebaseFirestore.getInstance().collection("Users").document(currentUser.getUid()).update(name);
-                currentUser.setName(nameET.getText().toString());
-
-                if(userListener != null){
-                    userListener.remove();
-                    userListener = null;
-                }
-
                 Intent i = new Intent(MainActivity.this, BasicGameActivity.class);
                 i.putExtra("isCreator", true);
-                i.putExtra("userId", currentUser.getUid());
-                i.putExtra("userName", currentUser.getName());
-                i.putExtra("gameName", currentUser.getName());
+                i.putExtra("userId", UserSingleton.INSTANCE.getCurrentUser().getUid());
+                i.putExtra("userName", UserSingleton.INSTANCE.getCurrentUser().getName());
+                i.putExtra("gameName", UserSingleton.INSTANCE.getCurrentUser().getName());
                 startActivity(i);
-
             }
         });
 
-
-
-
-
         refreshLayout.setRefreshing(true);
-
+        setUserData();
     }
 
 
 
+    private void handleLogout(){
+        FirebaseAuth mAuth = FirebaseAuth.getInstance();
+        String uid = mAuth.getUid();
 
-
-
-
-    public void setUserDataListener(){
-
-        if(mAuth.getCurrentUser() == null){
+        if(uid == null) {
             return;
         }
 
-        final DocumentReference docRef = DataManager.getUsersPath().document(mAuth.getCurrentUser().getUid());
-        userListener = docRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@Nullable DocumentSnapshot snapshot,
-                                @Nullable FirebaseFirestoreException e) {
-                if (e != null) {
-                    Log.w(TAG, "Listen failed.", e);
-                    return;
-                }
-
-                if (snapshot != null && snapshot.exists()) {
-                    Log.d(TAG, "Current data: " + snapshot.getData());
-
-                    User user = snapshot.toObject(User.class);
-
-                    currentUser = user;
-                    DataManager.setLocalUserObject(user);
-
-                    nameET.setText(user.getName());
-
-//                    nameET.addTextChangedListener(new TextWatcher() {
-//
-//                        @Override
-//                        public void afterTextChanged(Editable s) {
-//
-//                            if(currentUser != null){
-//                                currentUser.name = s.toString();
-//                                Map<String, Object> newData = new HashMap<>();
-//                                newData.put("name", currentUser.name);
-//                                FirebaseFirestore.getInstance().collection("Users").document(currentUser.getUid()).update(newData);
-//                            }
-//                        }
-//
-//                        @Override
-//                        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-//                        }
-//
-//                        @Override
-//                        public void onTextChanged(CharSequence s, int start,
-//                                                  int before, int count) {
-//
-//                        }
-//                    });
-
-                } else {
-                    Log.d(TAG, "Current data: null");
-                }
-            }
-        });
+        try{
+            mAuth.signOut();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
 
 
 
+
+    public void setUserData(){
+
+        if(!UserSingleton.INSTANCE.getUserIsLoggedIn() || UserSingleton.INSTANCE.getCurrentUser().getUid() == null){
+            return;
+        }
+
+        nameTV.setText(UserSingleton.INSTANCE.getCurrentUser().getName());
+
+    }
+
+
+
+    private void changeNamePrompt(){
+
+        if(!UserSingleton.INSTANCE.getUserIsLoggedIn()){
+            showLoginActivity();
+            return;
+        }
+
+        final EditText taskEditText = new EditText(MyApplication.getContext());
+        taskEditText.setAllCaps(false);
+        taskEditText.setHint("Enter Name");
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Change Name")
+                .setView(taskEditText)
+                .setPositiveButton("Set", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(final DialogInterface dialog, int which) {
+
+                        final String s = String.valueOf(taskEditText.getText());
+
+                        if (s.equals("")) {
+                            Toast.makeText(MainActivity.this, "Enter a code", Toast.LENGTH_SHORT).show();
+                        }
+
+                        CollectionReference userRef = DataManager.getUsersPath();
+                        userRef.document(UserSingleton.INSTANCE.getCurrentUser().getUid()).update("name",s);
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        dialog.dismiss();
+                    }
+                })
+
+                .create();
+        dialog.show();
+    }
 
 
 
 
     public void getActiveGames(){
+
+        if (gameListener != null) {
+            gameListener.remove();
+            gameListener = null;
+        }
 
         gameListener = FirebaseFirestore.getInstance().collection("ActiveGames").whereEqualTo("searchable", true).whereEqualTo("gameComplete", false).addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
@@ -340,31 +351,28 @@ public class MainActivity extends AppCompatActivity implements OnGameClickListen
     public void onGameClicked(GameObject game) {
 
 
-        if(currentUser == null){
+
+        if(UserSingleton.INSTANCE.getCurrentUser().getUid().equals("")){
             return;
-        }
-        if(userListener != null){
-            userListener.remove();
-            userListener = null;
         }
         if(gameListener != null){
             gameListener.remove();
             gameListener = null;
         }
-        if(nameET.getText().toString().equals("")){
+        if(nameTV.getText().toString().equals("")){
             Toast.makeText(this, "Enter a name", Toast.LENGTH_SHORT).show();
             return;
         }
 
 
         Map<String, Object> name = new HashMap<>();
-        name.put("name",nameET.getText().toString());
-        FirebaseFirestore.getInstance().collection("Users").document(currentUser.getUid()).update(name);
-        currentUser.setName(nameET.getText().toString());
+        name.put("name", nameTV.getText().toString());
+        FirebaseFirestore.getInstance().collection("Users").document(UserSingleton.INSTANCE.getCurrentUser().getUid()).update(name);
+        UserSingleton.INSTANCE.getCurrentUser().setName(nameTV.getText().toString());
 
         if(game.isGameStarted()){
             //if the game is already started we only want players already in the game to play
-            if(game.getPlayerOrder().contains(currentUser.getUid())){
+            if(game.getPlayerOrder().contains(UserSingleton.INSTANCE.getCurrentUser().getUid())){
 
                 //here we can send user to game
                 gotoGameActivity(game);
@@ -383,8 +391,8 @@ public class MainActivity extends AppCompatActivity implements OnGameClickListen
         Intent i = new Intent(this, BasicGameActivity.class);
         i.putExtra("isCreator", false);
         i.putExtra("gameObject", DataManager.serializeGameData(game));
-        i.putExtra("userId", currentUser.getUid());
-        i.putExtra("userName", currentUser.getName());
+        i.putExtra("userId", UserSingleton.INSTANCE.getCurrentUser().getUid());
+        i.putExtra("userName", UserSingleton.INSTANCE.getCurrentUser().getName());
         startActivity(i);
 
 
@@ -393,5 +401,10 @@ public class MainActivity extends AppCompatActivity implements OnGameClickListen
     @Override
     public void onRefresh() {
         getActiveGames();
+    }
+
+    @Override
+    public void onUserUpdated(@NotNull User user) {
+        setUserData();
     }
 }

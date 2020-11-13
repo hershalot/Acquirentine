@@ -65,12 +65,12 @@
 
 
     <include layout="@layout/board_layout"
+        android:id="@+id/board"
         android:layout_below="@id/title_layout"
-        android:layout_above="@+id/tile_played_layout"
+
         android:layout_alignParentEnd="true"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
-
 
 
     <ImageButton
@@ -91,7 +91,7 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/players_rv"
-        android:layout_above="@+id/tile_played_layout"
+        android:layout_above="@+id/grid_layout"
         android:paddingTop="15dp"
         android:paddingBottom="15dp"
         android:clipToPadding="false"
@@ -102,35 +102,116 @@
         android:layout_height="wrap_content"
         />
 
+
+
     <LinearLayout
-        android:id="@+id/tile_played_layout"
-        android:layout_above="@+id/grid_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:layout_below="@+id/board"
+        android:layout_alignStart="@+id/board"
+        android:layout_marginStart="25dp"
+        android:layout_marginTop="5dp"
+        android:orientation="vertical"
+        android:gravity="start">
+
+        <LinearLayout
+            android:id="@+id/merge_indicator_view"
+            android:layout_width="wrap_content"
+            android:visibility="gone"
+            android:orientation="horizontal"
+            android:layout_marginBottom="10dp"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/merge_round_indicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/reverseInGameColor"
+                android:textStyle="bold"
+                android:layout_marginEnd="10dp"
+                android:text="Merge Round"/>
+
+            <Button
+                android:id="@+id/show_merge_results"
+                android:background="@drawable/rounded_green_rectangle_bordered"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:textAllCaps="false"
+                android:text="results"
+                />
+
+        </LinearLayout>
+
 
         <TextView
-            android:layout_marginStart="15dp"
+            android:id="@+id/turn_name"
+            android:text="Turn Info"
+            android:layout_width="wrap_content"
+            android:textAlignment="textStart"
+            android:textStyle="bold"
+            android:textColor="@color/textColor"
+            android:layout_height="wrap_content"/>
+
+        <LinearLayout
+            android:id="@+id/tile_played_layout"
+            android:layout_margin="2dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/placeholderColor"
-            android:text="Last Tile Played: "/>
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/placeholderColor"
+                android:text="Last Tile Played: "/>
+
+            <TextView
+                android:id="@+id/last_tile_played"
+                android:layout_marginStart="15dp"
+                android:padding="1dp"
+                android:textSize="12sp"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:enabled="false"
+                android:maxLines="1"
+                android:textColor="@color/textColor"
+                android:background="@drawable/barely_rounded_white_rectangle_bordered"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                />
+
+        </LinearLayout>
 
         <TextView
-            android:id="@+id/last_tile_played"
-            android:layout_marginStart="15dp"
-            android:padding="1dp"
-            android:textSize="12sp"
-            android:layout_width="35dp"
-            android:layout_height="35dp"
-            android:enabled="false"
-            android:maxLines="1"
-            android:textColor="@color/textColor"
-            android:background="@drawable/barely_rounded_white_rectangle_bordered"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            />
+            android:id="@+id/buy_tv_1"
+            android:text="Turn 1"
+            android:textAlignment="textStart"
+            android:layout_width="wrap_content"
+            android:textColor="@color/placeholderColor"
+            android:layout_margin="2dp"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/buy_tv_2"
+            android:text="Turn 2"
+            android:textAlignment="textStart"
+            android:textColor="@color/placeholderColor"
+            android:layout_margin="2dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/buy_tv_3"
+            android:text="Turn 3"
+            android:textAlignment="textStart"
+            android:layout_width="wrap_content"
+            android:layout_margin="2dp"
+            android:textColor="@color/placeholderColor"
+            android:layout_height="wrap_content"/>
 
     </LinearLayout>
+
+
+
 
 
 
@@ -240,7 +321,7 @@
             <Button
                 android:layout_width="40dp"
                 android:layout_height="60dp"
-                android:textColor="@color/black"
+                android:textColor="@color/lightGray"
                 android:textAlignment="center"
                 android:id="@+id/nestor_button"
 
@@ -620,7 +701,7 @@
             android:layout_height="wrap_content"
             android:textColor="@color/textColor"
             android:layout_marginStart="10dp"
-            android:text="Close"
+            android:text="@string/close"
             android:textAllCaps="false"
             style="@style/Widget.AppCompat.Button.Borderless"
             />
@@ -732,7 +813,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/placeholderColor"
-        android:text="Draw Tile"
+        android:text="@string/draw_tile"
         android:visibility="invisible"
         android:textAllCaps="false"
         style="@style/Widget.AppCompat.Button.Borderless"/>
@@ -751,18 +832,30 @@
         android:layout_marginBottom="0dp" />
 
 
+    <include
+        layout="@layout/merge_details_layout"
+        android:id="@+id/merge_results_view"
+        android:visibility="invisible"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="0dp"
+        android:layout_marginBottom="0dp" />
+
+
     <Button
         android:id="@+id/start_game_btn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:textColor="@color/colorAccent"
+        android:textColor="@color/white"
         android:layout_margin="10dp"
         android:elevation="7dp"
         android:textAllCaps="false"
-        android:background="@drawable/rounded_grey_rectangle_bordered"
+        android:background="@drawable/rounded_green_rectangle"
         style="@style/Widget.AppCompat.Button.Borderless"
-        android:text="Start Game"
+        android:text="@string/start_game"
 
         />
 

@@ -38,7 +38,7 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.iid.FirebaseInstanceId;
+
 
 
 import java.util.Arrays;
@@ -57,13 +57,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private static final String TAG = "LoginActivity";
 
-    private static final String EMAIL = "email";
-    private static final String PUBLIC_PROFILE = "public_profile";
-
-    private String FacebookID = "";
-
     private FirebaseAuth mAuth;
-    private ProgressBar progressBar;
 
     private int RC_SIGN_IN = 34;
     private User workingUser;
@@ -180,7 +174,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        progressBar = findViewById(R.id.login_progress_bar);
+        ProgressBar progressBar = findViewById(R.id.login_progress_bar);
         progressBar.setVisibility(View.GONE);
         mAuth = FirebaseAuth.getInstance();
 
@@ -231,33 +225,6 @@ public class LoginActivity extends AppCompatActivity {
         firebaseLoginButton.setEnabled(true);
     }
 
-
-
-
-
-    private void firebaseLoginWithGoogle(GoogleSignInAccount acct) {
-        Log.d(TAG, "firebaseAuthWithGoogle:" + acct.getId());
-
-        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
-        mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d(TAG, "signInWithCredential:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
-                            existingUserCheck();
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            Log.w(TAG, "signInWithCredential:failure", task.getException());
-                            Toast.makeText(getApplicationContext(), "Authentication Failed.", Toast.LENGTH_SHORT).show();
-
-                        }
-
-                    }
-                });
-    }
 
 
 

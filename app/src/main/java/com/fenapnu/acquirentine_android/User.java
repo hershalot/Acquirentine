@@ -11,14 +11,22 @@ public class User {
     String gameId;
     String name;
     String email;
-
+    String token;
+    String deviceOS;
 
 
     public String getGameId() {
         return gameId;
     }
 
+    public String getDeviceOS() {
+        return deviceOS;
+    }
+
     public String getName() {
+        return name;
+    }
+    public String getToken() {
         return name;
     }
 
@@ -35,6 +43,13 @@ public class User {
         return inGame;
     }
 
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public void setDeviceOS(String deviceOS) {
+        this.deviceOS = deviceOS;
+    }
 
     public void setEmail(String email) {
         this.email = email;
